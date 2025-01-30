@@ -18,7 +18,7 @@ class ManageItemsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Manage Items")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1100, 600)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -49,6 +49,7 @@ class ManageItemsDialog(QDialog):
         else:
             self.save_button = QPushButton("Save Spreadsheet to Home")
         self.save_button.setFont(self.font)
+        self.save_button.setEnabled(False)
         self.save_button.clicked.connect(self.save_to_desktop)
         self.layout.addWidget(self.save_button)
 
@@ -105,6 +106,7 @@ class ManageItemsDialog(QDialog):
 
     def update_list(self):
         self.table_widget.setRowCount(0)
+        self.save_button.setEnabled(False)
         search_text = self.search_bar.text().lower()
         search_index = self.search_dropdown.currentIndex()
 
@@ -116,12 +118,16 @@ class ManageItemsDialog(QDialog):
         try:
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
+                has_items = False
                 for row in reader:
                     if search_text in row[search_index].lower():
                         row_position = self.table_widget.rowCount()
                         self.table_widget.insertRow(row_position)
                         for column, item in enumerate(row):
                             self.table_widget.setItem(row_position, column, QTableWidgetItem(item))
+                        has_items = True
+                if has_items:
+                    self.save_button.setEnabled(True)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load items: {e}")
 
@@ -180,7 +186,7 @@ class ManageItemsDialog(QDialog):
             file_path = LATEST_BOOKS_PATH
         else:
             file_path = LATEST_OFFICE_PATH
-
+    
         try:
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
@@ -189,12 +195,13 @@ class ManageItemsDialog(QDialog):
                     if row[0] == fields[0]:
                         row[-1] = str(int(row[-1]) + 1)
                         break
-
+    
             with open(file_path, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
-
+    
             self.update_list()
+            self.table_widget.selectRow(selected_row)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to update item: {e}")
 
@@ -205,7 +212,7 @@ class ManageItemsDialog(QDialog):
             file_path = LATEST_BOOKS_PATH
         else:
             file_path = LATEST_OFFICE_PATH
-
+    
         try:
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
@@ -224,13 +231,14 @@ class ManageItemsDialog(QDialog):
                             else:
                                 row[-1] = '1'
                         break
-
+    
             with open(file_path, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
             if not current_qtty > 1 and reply == QMessageBox.Yes:
                 QMessageBox.information(self, "Success", "Item removed from inventory")
             self.update_list()
+            self.table_widget.selectRow(selected_row)  # Reselect the previously selected row
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to update item: {e}")
 
