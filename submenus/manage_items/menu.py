@@ -58,6 +58,7 @@ class ManageItemsDialog(QDialog):
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.itemSelectionChanged.connect(self.update_buttons)
         self.table_widget.itemDoubleClicked.connect(self.edit_item)
+        self.table_widget.setSortingEnabled(True)
         self.layout.addWidget(self.table_widget)
 
         self.button_layout = QHBoxLayout()
@@ -109,12 +110,14 @@ class ManageItemsDialog(QDialog):
         self.save_button.setEnabled(False)
         search_text = self.search_bar.text().lower()
         search_index = self.search_dropdown.currentIndex()
-
+    
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
+            numeric_columns = [0, 4, 5, 6, 7]  # ID, Pages, Photocopy Price, Book Price, Quantity
         else:
             file_path = LATEST_OFFICE_PATH
-
+            numeric_columns = [0, 5, 6]  # ID, Price, Quantity
+    
         try:
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
@@ -124,7 +127,10 @@ class ManageItemsDialog(QDialog):
                         row_position = self.table_widget.rowCount()
                         self.table_widget.insertRow(row_position)
                         for column, item in enumerate(row):
-                            self.table_widget.setItem(row_position, column, QTableWidgetItem(item))
+                            if column in numeric_columns:
+                                self.table_widget.setItem(row_position, column, NumericTableWidgetItem(item))
+                            else:
+                                self.table_widget.setItem(row_position, column, QTableWidgetItem(item))
                         has_items = True
                 if has_items:
                     self.save_button.setEnabled(True)
@@ -144,7 +150,7 @@ class ManageItemsDialog(QDialog):
             self.delete_button.setEnabled(False)
 
     def save_to_desktop(self):
-        current_time = datetime.datetime.now().strftime("%d-%m-%y_%H:%M")
+        current_time = datetime.datetime.now().strftime("%d-%m-%y_%H-%M")
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
             filename = f"Books_{current_time}.csv"
@@ -268,6 +274,15 @@ class ManageItemsDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to delete item: {e}")
 
+class NumericTableWidgetItem(QTableWidgetItem):
+    def __lt__(self, other):
+        if isinstance(other, QTableWidgetItem):
+            try:
+                return float(self.text()) < float(other.text())
+            except ValueError:
+                return self.text() < other.text()
+        return super().__lt__(other)
+
 class EditBookDialog(QDialog):
     def __init__(self, parent, fields):
         super().__init__(parent)
@@ -284,40 +299,72 @@ class EditBookDialog(QDialog):
         self.id_label.setFont(self.font)
         self.layout.addWidget(self.id_label)
 
+        self.form_layout = QVBoxLayout()
+        
+        self.name_layout = QHBoxLayout()
+        self.name_label = QLabel("Book Name:")
+        self.name_label.setFont(self.font)
+        self.name_layout.addWidget(self.name_label)
         self.name_input = QLineEdit(fields[1] if len(fields) > 1 else "")
         self.name_input.setFont(self.font)
-        self.name_input.setPlaceholderText("Book Name")
-        self.layout.addWidget(self.name_input)
-
+        self.name_layout.addWidget(self.name_input)
+        self.form_layout.addLayout(self.name_layout)
+        
+        self.author_layout = QHBoxLayout()
+        self.author_label = QLabel("Author:")
+        self.author_label.setFont(self.font)
+        self.author_layout.addWidget(self.author_label)
         self.author_input = QLineEdit(fields[2] if len(fields) > 2 else "")
         self.author_input.setFont(self.font)
-        self.author_input.setPlaceholderText("Author")
-        self.layout.addWidget(self.author_input)
-
+        self.author_layout.addWidget(self.author_input)
+        self.form_layout.addLayout(self.author_layout)
+        
+        self.edition_layout = QHBoxLayout()
+        self.edition_label = QLabel("Edition:")
+        self.edition_label.setFont(self.font)
+        self.edition_layout.addWidget(self.edition_label)
         self.edition_input = QLineEdit(fields[3] if len(fields) > 3 else "")
         self.edition_input.setFont(self.font)
-        self.edition_input.setPlaceholderText("Edition")
-        self.layout.addWidget(self.edition_input)
-
+        self.edition_layout.addWidget(self.edition_input)
+        self.form_layout.addLayout(self.edition_layout)
+        
+        self.pages_layout = QHBoxLayout()
+        self.pages_label = QLabel("Pages:")
+        self.pages_label.setFont(self.font)
+        self.pages_layout.addWidget(self.pages_label)
         self.pages_input = QLineEdit(fields[4] if len(fields) > 4 else "")
         self.pages_input.setFont(self.font)
-        self.pages_input.setPlaceholderText("Pages")
-        self.layout.addWidget(self.pages_input)
-
+        self.pages_layout.addWidget(self.pages_input)
+        self.form_layout.addLayout(self.pages_layout)
+        
+        self.photocopyprice_layout = QHBoxLayout()
+        self.photocopyprice_label = QLabel("Photocopy Price:")
+        self.photocopyprice_label.setFont(self.font)
+        self.photocopyprice_layout.addWidget(self.photocopyprice_label)
         self.photocopyprice_input = QLineEdit(fields[5] if len(fields) > 5 else "")
         self.photocopyprice_input.setFont(self.font)
-        self.photocopyprice_input.setPlaceholderText("Photocopy Price")
-        self.layout.addWidget(self.photocopyprice_input)
-
+        self.photocopyprice_layout.addWidget(self.photocopyprice_input)
+        self.form_layout.addLayout(self.photocopyprice_layout)
+        
+        self.bookprice_layout = QHBoxLayout()
+        self.bookprice_label = QLabel("Book Price:")
+        self.bookprice_label.setFont(self.font)
+        self.bookprice_layout.addWidget(self.bookprice_label)
         self.bookprice_input = QLineEdit(fields[6] if len(fields) > 6 else "")
         self.bookprice_input.setFont(self.font)
-        self.bookprice_input.setPlaceholderText("Book Price")
-        self.layout.addWidget(self.bookprice_input)
-
+        self.bookprice_layout.addWidget(self.bookprice_input)
+        self.form_layout.addLayout(self.bookprice_layout)
+        
+        self.qtty_layout = QHBoxLayout()
+        self.qtty_label = QLabel("Quantity:")
+        self.qtty_label.setFont(self.font)
+        self.qtty_layout.addWidget(self.qtty_label)
         self.qtty_input = QLineEdit(fields[7] if len(fields) > 7 else "")
         self.qtty_input.setFont(self.font)
-        self.qtty_input.setPlaceholderText("Quantity")
-        self.layout.addWidget(self.qtty_input)
+        self.qtty_layout.addWidget(self.qtty_input)
+        self.form_layout.addLayout(self.qtty_layout)
+        
+        self.layout.addLayout(self.form_layout)
 
         self.save_button = QPushButton("Save")
         self.save_button.setFont(self.font)
@@ -393,29 +440,63 @@ class EditOfficeItemDialog(QDialog):
         self.id_label.setFont(self.font)
         self.layout.addWidget(self.id_label)
 
+        self.form_layout = QVBoxLayout()
+        
+        self.type_layout = QHBoxLayout()
+        self.type_label = QLabel("Category:")
+        self.type_label.setFont(self.font)
+        self.type_layout.addWidget(self.type_label)
         self.type_input = QLineEdit(fields[1] if len(fields) > 1 else "")
         self.type_input.setFont(self.font)
-        self.layout.addWidget(self.type_input)
-
+        self.type_layout.addWidget(self.type_input)
+        self.form_layout.addLayout(self.type_layout)
+        
+        self.product_name_layout = QHBoxLayout()
+        self.product_name_label = QLabel("Product Name:")
+        self.product_name_label.setFont(self.font)
+        self.product_name_layout.addWidget(self.product_name_label)
         self.product_name_input = QLineEdit(fields[2] if len(fields) > 2 else "")
         self.product_name_input.setFont(self.font)
-        self.layout.addWidget(self.product_name_input)
-
+        self.product_name_layout.addWidget(self.product_name_input)
+        self.form_layout.addLayout(self.product_name_layout)
+        
+        self.brand_layout = QHBoxLayout()
+        self.brand_label = QLabel("Brand:")
+        self.brand_label.setFont(self.font)
+        self.brand_layout.addWidget(self.brand_label)
         self.brand_input = QLineEdit(fields[3] if len(fields) > 3 else "")
         self.brand_input.setFont(self.font)
-        self.layout.addWidget(self.brand_input)
-
+        self.brand_layout.addWidget(self.brand_input)
+        self.form_layout.addLayout(self.brand_layout)
+        
+        self.color_layout = QHBoxLayout()
+        self.color_label = QLabel("Color:")
+        self.color_label.setFont(self.font)
+        self.color_layout.addWidget(self.color_label)
         self.color_input = QLineEdit(fields[4] if len(fields) > 4 else "")
         self.color_input.setFont(self.font)
-        self.layout.addWidget(self.color_input)
-
+        self.color_layout.addWidget(self.color_input)
+        self.form_layout.addLayout(self.color_layout)
+        
+        self.price_layout = QHBoxLayout()
+        self.price_label = QLabel("Price:")
+        self.price_label.setFont(self.font)
+        self.price_layout.addWidget(self.price_label)
         self.price_input = QLineEdit(fields[5] if len(fields) > 5 else "")
         self.price_input.setFont(self.font)
-        self.layout.addWidget(self.price_input)
-
+        self.price_layout.addWidget(self.price_input)
+        self.form_layout.addLayout(self.price_layout)
+        
+        self.qtty_layout = QHBoxLayout()
+        self.qtty_label = QLabel("Quantity:")
+        self.qtty_label.setFont(self.font)
+        self.qtty_layout.addWidget(self.qtty_label)
         self.qtty_input = QLineEdit(fields[6] if len(fields) > 6 else "")
         self.qtty_input.setFont(self.font)
-        self.layout.addWidget(self.qtty_input)
+        self.qtty_layout.addWidget(self.qtty_input)
+        self.form_layout.addLayout(self.qtty_layout)
+        
+        self.layout.addLayout(self.form_layout)
 
         self.save_button = QPushButton("Save")
         self.save_button.setFont(self.font)
@@ -445,7 +526,7 @@ class EditOfficeItemDialog(QDialog):
     
         # Ensure that price is a non-zero positive number
         try:
-            price = float(data[4])
+            price = float(data[5])
             if price <= 0:
                 raise ValueError("Price must be a positive number.")
         except ValueError:
