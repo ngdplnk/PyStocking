@@ -1,8 +1,10 @@
 import os
 import sys
 import csv
-from PyQt5.QtWidgets import (QMessageBox, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox, QListWidget, QListWidgetItem, QScrollArea, QWidget)
+import datetime
+from PyQt5.QtWidgets import (QMessageBox, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox, QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea, QWidget)
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 
 if sys.platform == "win32":
     PROGRAM_PATH = os.path.join(os.getenv('APPDATA'), 'PyStocking')
@@ -16,7 +18,7 @@ class ManageItemsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Manage Items")
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 800, 600)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -27,26 +29,37 @@ class ManageItemsDialog(QDialog):
         self.dropdown = QComboBox()
         self.dropdown.setFont(self.font)
         self.dropdown.addItems(["Books", "Office Items"])
-        self.dropdown.currentIndexChanged.connect(self.update_list)
+        self.dropdown.currentIndexChanged.connect(self.update_search_dropdown)
         self.layout.addWidget(self.dropdown)
 
-        self.save_button = QPushButton("Save to Desktop")
+        self.search_layout = QHBoxLayout()
+        self.search_dropdown = QComboBox()
+        self.search_dropdown.setFont(self.font)
+        self.search_layout.addWidget(self.search_dropdown)
+
+        self.search_bar = QLineEdit()
+        self.search_bar.setFont(self.font)
+        self.search_bar.setPlaceholderText(f"Search {self.dropdown.currentText()}...")
+        self.search_bar.textChanged.connect(self.update_list)
+        self.search_layout.addWidget(self.search_bar)
+
+        self.layout.addLayout(self.search_layout)
+
+        if sys.platform == "win32":
+            self.save_button = QPushButton("Save Spreadsheet to Desktop")
+        else:
+            self.save_button = QPushButton("Save Spreadsheet to Home")
         self.save_button.setFont(self.font)
         self.save_button.clicked.connect(self.save_to_desktop)
         self.layout.addWidget(self.save_button)
 
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_widget = QWidget()
-        self.scroll_layout = QVBoxLayout()
-        self.scroll_widget.setLayout(self.scroll_layout)
-        self.scroll_area.setWidget(self.scroll_widget)
-        self.layout.addWidget(self.scroll_area)
-
-        self.list_widget = QListWidget()
-        self.list_widget.setFont(self.font)
-        self.list_widget.itemSelectionChanged.connect(self.update_buttons)
-        self.scroll_layout.addWidget(self.list_widget)
+        self.table_widget = QTableWidget()
+        self.table_widget.setFont(self.font)
+        self.table_widget.setColumnCount(8)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.itemSelectionChanged.connect(self.update_buttons)
+        self.table_widget.itemDoubleClicked.connect(self.edit_item)
+        self.layout.addWidget(self.table_widget)
 
         self.button_layout = QHBoxLayout()
         self.edit_button = QPushButton("Edit")
@@ -55,17 +68,17 @@ class ManageItemsDialog(QDialog):
         self.edit_button.clicked.connect(self.edit_item)
         self.button_layout.addWidget(self.edit_button)
 
-        self.sum_button = QPushButton("Sum 1 to this item")
-        self.sum_button.setFont(self.font)
-        self.sum_button.setEnabled(False)
-        self.sum_button.clicked.connect(self.sum_to_item)
-        self.button_layout.addWidget(self.sum_button)
+        self.add_button = QPushButton("Add 1")
+        self.add_button.setFont(self.font)
+        self.add_button.setEnabled(False)
+        self.add_button.clicked.connect(self.add_to_inventory)
+        self.button_layout.addWidget(self.add_button)
 
-        self.subs_button = QPushButton("Substract 1 to this item")
-        self.subs_button.setFont(self.font)
-        self.subs_button.setEnabled(False)
-        self.subs_button.clicked.connect(self.subs_from_item)
-        self.button_layout.addWidget(self.subs_button)
+        self.subtract_button = QPushButton("Subtract 1")
+        self.subtract_button.setFont(self.font)
+        self.subtract_button.setEnabled(False)
+        self.subtract_button.clicked.connect(self.subtract_from_inventory)
+        self.button_layout.addWidget(self.subtract_button)
 
         self.delete_button = QPushButton("Delete this Item")
         self.delete_button.setFont(self.font)
@@ -75,10 +88,24 @@ class ManageItemsDialog(QDialog):
 
         self.layout.addLayout(self.button_layout)
 
+        self.update_search_dropdown()
+        self.update_list()
+
+    def update_search_dropdown(self):
+        self.search_dropdown.clear()
+        if self.dropdown.currentText() == "Books":
+            self.search_dropdown.addItems(["ID", "Book Name", "Author", "Edition", "Pages", "Photocopy Price", "Book Price", "Quantity"])
+            self.table_widget.setHorizontalHeaderLabels(["ID", "Book Name", "Author", "Edition", "Pages", "Photocopy Price", "Book Price", "Quantity"])
+        else:
+            self.search_dropdown.addItems(["ID", "Category", "Product Name", "Brand", "Color", "Price", "Quantity"])
+            self.table_widget.setHorizontalHeaderLabels(["ID", "Category", "Product Name", "Brand", "Color", "Price", "Quantity"])
         self.update_list()
 
     def update_list(self):
-        self.list_widget.clear()
+        self.table_widget.setRowCount(0)
+        search_text = self.search_bar.text().lower()
+        search_index = self.search_dropdown.currentIndex()
+
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
         else:
@@ -88,31 +115,40 @@ class ManageItemsDialog(QDialog):
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
                 for row in reader:
-                    item = QListWidgetItem(", ".join(row))
-                    self.list_widget.addItem(item)
+                    if search_text in row[search_index].lower():
+                        row_position = self.table_widget.rowCount()
+                        self.table_widget.insertRow(row_position)
+                        for column, item in enumerate(row):
+                            self.table_widget.setItem(row_position, column, QTableWidgetItem(item))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load items: {e}")
 
     def update_buttons(self):
-        if self.list_widget.selectedItems():
+        if self.table_widget.selectedItems():
             self.edit_button.setEnabled(True)
-            self.sum_button.setEnabled(True)
-            self.subs_button.setEnabled(True)
+            self.add_button.setEnabled(True)
+            self.subtract_button.setEnabled(True)
             self.delete_button.setEnabled(True)
         else:
             self.edit_button.setEnabled(False)
-            self.sum_button.setEnabled(False)
-            self.subs_button.setEnabled(False)
+            self.add_button.setEnabled(False)
+            self.subtract_button.setEnabled(False)
             self.delete_button.setEnabled(False)
-
+    
     def save_to_desktop(self):
+        current_time = datetime.datetime.now().strftime("%d-%m-%y_%H:%M")
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
-            save_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'latest_books.csv')
+            filename = f"Books_{current_time}.csv"
         else:
             file_path = LATEST_OFFICE_PATH
-            save_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'latest_office.csv')
-
+            filename = f"Office_Items_{current_time}.csv"
+    
+        if sys.platform == "win32":
+            save_path = os.path.join(os.getenv('USERPROFILE'), 'Desktop', filename)
+        else:
+            save_path = os.path.join(os.path.expanduser('~'), filename)
+    
         try:
             with open(file_path, 'r') as file:
                 data = file.read()
@@ -123,8 +159,8 @@ class ManageItemsDialog(QDialog):
             QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
 
     def edit_item(self):
-        selected_item = self.list_widget.currentItem().text()
-        fields = selected_item.split(", ")
+        selected_row = self.table_widget.currentRow()
+        fields = [self.table_widget.item(selected_row, i).text() for i in range(self.table_widget.columnCount())]
         if self.dropdown.currentText() == "Books":
             self.edit_dialog = EditBookDialog(self, fields)
         else:
@@ -132,9 +168,9 @@ class ManageItemsDialog(QDialog):
         self.edit_dialog.exec_()
         self.update_list()
 
-    def sum_to_item(self):
-        selected_item = self.list_widget.currentItem().text()
-        fields = selected_item.split(", ")
+    def add_to_inventory(self):
+        selected_row = self.table_widget.currentRow()
+        fields = [self.table_widget.item(selected_row, i).text() for i in range(self.table_widget.columnCount())]
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
         else:
@@ -145,7 +181,7 @@ class ManageItemsDialog(QDialog):
                 reader = csv.reader(file)
                 rows = list(reader)
                 for row in rows:
-                    if row[1] == fields[1]:
+                    if row[0] == fields[0]:
                         row[-1] = str(int(row[-1]) + 1)
                         break
 
@@ -158,9 +194,9 @@ class ManageItemsDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to update item: {e}")
 
-    def subs_from_item(self):
-        selected_item = self.list_widget.currentItem().text()
-        fields = selected_item.split(", ")
+    def subtract_from_inventory(self):
+        selected_row = self.table_widget.currentRow()
+        fields = [self.table_widget.item(selected_row, i).text() for i in range(self.table_widget.columnCount())]
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
         else:
@@ -171,14 +207,14 @@ class ManageItemsDialog(QDialog):
                 reader = csv.reader(file)
                 rows = list(reader)
                 for row in rows:
-                    if row[1] == fields[1]:
+                    if row[0] == fields[0]:
                         current_qtty = int(row[-1])
                         if current_qtty > 1:
                             row[-1] = str(current_qtty - 1)
                         else:
                             reply = QMessageBox.question(self, 'Confirmation', 
-                                                        "This is the last item in inventory. Do you want to delete it?", 
-                                                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                                                         "This is the last item in inventory. Do you want to delete it?", 
+                                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
                             if reply == QMessageBox.Yes:
                                 rows.remove(row)
                             else:
@@ -195,8 +231,8 @@ class ManageItemsDialog(QDialog):
             QMessageBox.critical(self, "Error", f"Failed to update item: {e}")
 
     def delete_item(self):
-        selected_item = self.list_widget.currentItem().text()
-        fields = selected_item.split(", ")
+        selected_row = self.table_widget.currentRow()
+        fields = [self.table_widget.item(selected_row, i).text() for i in range(self.table_widget.columnCount())]
         if self.dropdown.currentText() == "Books":
             file_path = LATEST_BOOKS_PATH
         else:
@@ -205,7 +241,7 @@ class ManageItemsDialog(QDialog):
         try:
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
-                rows = [row for row in reader if row[1] != fields[1]]
+                rows = [row for row in reader if row[0] != fields[0]]
 
             with open(file_path, 'w', newline='') as file:
                 writer = csv.writer(file)
@@ -232,27 +268,27 @@ class EditBookDialog(QDialog):
         self.id_label.setFont(self.font)
         self.layout.addWidget(self.id_label)
 
-        self.name_input = QLineEdit(fields[1])
+        self.name_input = QLineEdit(fields[1] if len(fields) > 1 else "")
         self.name_input.setFont(self.font)
         self.layout.addWidget(self.name_input)
 
-        self.author_input = QLineEdit(fields[2])
+        self.author_input = QLineEdit(fields[2] if len(fields) > 2 else "")
         self.author_input.setFont(self.font)
         self.layout.addWidget(self.author_input)
 
-        self.edition_input = QLineEdit(fields[3])
+        self.edition_input = QLineEdit(fields[3] if len(fields) > 3 else "")
         self.edition_input.setFont(self.font)
         self.layout.addWidget(self.edition_input)
 
-        self.pages_input = QLineEdit(fields[4])
+        self.pages_input = QLineEdit(fields[4] if len(fields) > 4 else "")
         self.pages_input.setFont(self.font)
         self.layout.addWidget(self.pages_input)
 
-        self.price_input = QLineEdit(fields[5])
+        self.price_input = QLineEdit(fields[5] if len(fields) > 5 else "")
         self.price_input.setFont(self.font)
         self.layout.addWidget(self.price_input)
 
-        self.qtty_input = QLineEdit(fields[6])
+        self.qtty_input = QLineEdit(fields[6] if len(fields) > 6 else "")
         self.qtty_input.setFont(self.font)
         self.layout.addWidget(self.qtty_input)
 
@@ -306,23 +342,23 @@ class EditOfficeItemDialog(QDialog):
         self.id_label.setFont(self.font)
         self.layout.addWidget(self.id_label)
 
-        self.type_input = QLineEdit(fields[1])
+        self.type_input = QLineEdit(fields[1] if len(fields) > 1 else "")
         self.type_input.setFont(self.font)
         self.layout.addWidget(self.type_input)
 
-        self.product_name_input = QLineEdit(fields[2])
+        self.product_name_input = QLineEdit(fields[2] if len(fields) > 2 else "")
         self.product_name_input.setFont(self.font)
         self.layout.addWidget(self.product_name_input)
 
-        self.color_input = QLineEdit(fields[3])
+        self.color_input = QLineEdit(fields[3] if len(fields) > 3 else "")
         self.color_input.setFont(self.font)
         self.layout.addWidget(self.color_input)
 
-        self.price_input = QLineEdit(fields[4])
+        self.price_input = QLineEdit(fields[4] if len(fields) > 4 else "")
         self.price_input.setFont(self.font)
         self.layout.addWidget(self.price_input)
 
-        self.qtty_input = QLineEdit(fields[5])
+        self.qtty_input = QLineEdit(fields[5] if len(fields) > 5 else "")
         self.qtty_input.setFont(self.font)
         self.layout.addWidget(self.qtty_input)
 
