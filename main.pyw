@@ -43,7 +43,7 @@ class MainMenu(QMainWindow):
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
 
-        # Line count label
+        # Available items label
         line_count = self.get_line_count()
         line_count_label = QLabel(self.update_line_count(line_count))
         line_count_font = QFont()

@@ -46,6 +46,7 @@ class AddItemsDialog(QDialog):
         self.dropdown_font.setPointSize(14)
         self.dropdown.setFont(self.dropdown_font)
         self.dropdown.currentIndexChanged.connect(self.update_form)
+        self.dropdown.setToolTip("Select the type of item you want to add.")
         self.layout.addWidget(self.dropdown)
 
         self.form_layout = QVBoxLayout()
@@ -56,6 +57,7 @@ class AddItemsDialog(QDialog):
         self.save_button_font.setPointSize(14)
         self.save_button.setFont(self.save_button_font)
         self.save_button.clicked.connect(self.save_item)
+        self.save_button.setToolTip("Save the item to the inventory.")
         self.layout.addWidget(self.save_button)
 
         self.update_form()
@@ -89,6 +91,7 @@ class AddItemsDialog(QDialog):
             self.name_layout.addWidget(self.name_label)
             self.name_input = QLineEdit()
             self.name_input.setFont(self.id_label_font)
+            self.name_input.setToolTip("Enter the name of the book.")
             self.name_layout.addWidget(self.name_input)
             self.form_layout.addLayout(self.name_layout)
             
@@ -98,6 +101,7 @@ class AddItemsDialog(QDialog):
             self.author_layout.addWidget(self.author_label)
             self.author_input = QLineEdit()
             self.author_input.setFont(self.id_label_font)
+            self.author_input.setToolTip("Enter the author of the book.")
             self.author_layout.addWidget(self.author_input)
             self.form_layout.addLayout(self.author_layout)
             
@@ -107,6 +111,7 @@ class AddItemsDialog(QDialog):
             self.edition_layout.addWidget(self.edition_label)
             self.edition_input = QLineEdit()
             self.edition_input.setFont(self.id_label_font)
+            self.edition_input.setToolTip("Enter the edition of the book.")
             self.edition_layout.addWidget(self.edition_input)
             self.form_layout.addLayout(self.edition_layout)
             
@@ -116,6 +121,7 @@ class AddItemsDialog(QDialog):
             self.pages_layout.addWidget(self.pages_label)
             self.pages_input = QLineEdit()
             self.pages_input.setFont(self.id_label_font)
+            self.pages_input.setToolTip("Enter the number of pages in the book.")
             self.pages_layout.addWidget(self.pages_input)
             self.form_layout.addLayout(self.pages_layout)
             
@@ -125,6 +131,7 @@ class AddItemsDialog(QDialog):
             self.photocopyprice_layout.addWidget(self.photocopyprice_label)
             self.photocopyprice_input = QLineEdit()
             self.photocopyprice_input.setFont(self.id_label_font)
+            self.photocopyprice_input.setToolTip("Enter the price of a photocopy of the book.")
             self.photocopyprice_layout.addWidget(self.photocopyprice_input)
             self.form_layout.addLayout(self.photocopyprice_layout)
             
@@ -134,6 +141,7 @@ class AddItemsDialog(QDialog):
             self.bookprice_layout.addWidget(self.bookprice_label)
             self.bookprice_input = QLineEdit()
             self.bookprice_input.setFont(self.id_label_font)
+            self.bookprice_input.setToolTip("Enter the price of the book.")
             self.bookprice_layout.addWidget(self.bookprice_input)
             self.form_layout.addLayout(self.bookprice_layout)
             
@@ -143,6 +151,7 @@ class AddItemsDialog(QDialog):
             self.qtty_layout.addWidget(self.qtty_label)
             self.qtty_input = QLineEdit("1")
             self.qtty_input.setFont(self.id_label_font)
+            self.qtty_input.setToolTip("Enter the available quantity of the book.")
             self.qtty_layout.addWidget(self.qtty_input)
             self.form_layout.addLayout(self.qtty_layout)
         else:
@@ -158,6 +167,7 @@ class AddItemsDialog(QDialog):
             self.type_layout.addWidget(self.type_label)
             self.type_input = QLineEdit()
             self.type_input.setFont(self.id_label_font)
+            self.type_input.setToolTip("Enter the category of the product.")
             self.type_layout.addWidget(self.type_input)
             self.form_layout.addLayout(self.type_layout)
             
@@ -167,6 +177,7 @@ class AddItemsDialog(QDialog):
             self.product_name_layout.addWidget(self.product_name_label)
             self.product_name_input = QLineEdit()
             self.product_name_input.setFont(self.id_label_font)
+            self.product_name_input.setToolTip("Enter the name of the product.")
             self.product_name_layout.addWidget(self.product_name_input)
             self.form_layout.addLayout(self.product_name_layout)
             
@@ -176,6 +187,7 @@ class AddItemsDialog(QDialog):
             self.brand_layout.addWidget(self.brand_label)
             self.brand_input = QLineEdit()
             self.brand_input.setFont(self.id_label_font)
+            self.brand_input.setToolTip("Enter the brand of the product.")
             self.brand_layout.addWidget(self.brand_input)
             self.form_layout.addLayout(self.brand_layout)
             
@@ -185,6 +197,7 @@ class AddItemsDialog(QDialog):
             self.color_layout.addWidget(self.color_label)
             self.color_input = QLineEdit()
             self.color_input.setFont(self.id_label_font)
+            self.color_input.setToolTip("Enter the color of the product.")
             self.color_layout.addWidget(self.color_input)
             self.form_layout.addLayout(self.color_layout)
             
@@ -194,6 +207,7 @@ class AddItemsDialog(QDialog):
             self.price_layout.addWidget(self.price_label)
             self.price_input = QLineEdit()
             self.price_input.setFont(self.id_label_font)
+            self.price_input.setToolTip("Enter the price of the product.")
             self.price_layout.addWidget(self.price_input)
             self.form_layout.addLayout(self.price_layout)
             
@@ -203,6 +217,7 @@ class AddItemsDialog(QDialog):
             self.qtty_layout.addWidget(self.qtty_label)
             self.qtty_input = QLineEdit("1")
             self.qtty_input.setFont(self.id_label_font)
+            self.qtty_input.setToolTip("Enter the available quantity of the product.")
             self.qtty_layout.addWidget(self.qtty_input)
             self.form_layout.addLayout(self.qtty_layout)
     
