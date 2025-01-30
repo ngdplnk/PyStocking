@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from submenus.add_items.menu import open_add_menu
 from submenus.manage_items.menu import open_manage_menu
+from submenus.advanced_options.menu import open_advanced_options_menu
 
 # Get PATHS
 if sys.platform == "win32":
@@ -72,6 +73,14 @@ class MainMenu(QMainWindow):
         manage_button.setFixedHeight(60)
         buttons_layout.addWidget(manage_button)
 
+        # Advanced options button
+        advanced_options_button = QPushButton("Advanced Options")
+        advanced_options_button.setFont(self.font)
+        advanced_options_button.setToolTip("Open advanced options")
+        advanced_options_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        advanced_options_button.setFixedHeight(60)
+        buttons_layout.addWidget(advanced_options_button)
+
         # Exit button
         exit_button = QPushButton("Close program")
         exit_button.setFont(self.font)
@@ -86,11 +95,12 @@ class MainMenu(QMainWindow):
         central_widget.setLayout(layout)
 
         # Adjust button widths to match the title width
-        self.adjust_button_widths(title_label, [add_button, manage_button, exit_button])
+        self.adjust_button_widths(title_label, [add_button, manage_button, advanced_options_button, exit_button])
 
         # Connect button actions
         add_button.clicked.connect(lambda: (open_add_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
         manage_button.clicked.connect(lambda: (open_manage_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
+        advanced_options_button.clicked.connect(lambda: (open_advanced_options_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
         exit_button.clicked.connect(self.close)
 
     def adjust_button_widths(self, reference_label, buttons):

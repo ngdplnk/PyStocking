@@ -178,10 +178,14 @@ class ManageItemsDialog(QDialog):
         else:
             save_path = os.path.join(os.path.expanduser('~'), filename)
 
+        backup_path = os.path.join(SAVES_PATH, filename)
+
         try:
             with open(file_path, 'r') as file:
                 data = file.read()
             with open(save_path, 'w') as file:
+                file.write(data)
+            with open(backup_path, 'w') as file:
                 file.write(data)
             if sys.platform == "win32":
                 QMessageBox.information(self, "Success", f"{filename} successfully saved to Desktop")
