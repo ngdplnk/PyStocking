@@ -39,7 +39,6 @@ class ManageItemsDialog(QDialog):
 
         self.search_bar = QLineEdit()
         self.search_bar.setFont(self.font)
-        self.search_bar.setPlaceholderText(f"Search {self.dropdown.currentText()}...")
         self.search_bar.textChanged.connect(self.update_list)
         self.search_layout.addWidget(self.search_bar)
 
@@ -55,7 +54,6 @@ class ManageItemsDialog(QDialog):
 
         self.table_widget = QTableWidget()
         self.table_widget.setFont(self.font)
-        self.table_widget.setColumnCount(8)
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.itemSelectionChanged.connect(self.update_buttons)
         self.table_widget.itemDoubleClicked.connect(self.edit_item)
@@ -95,10 +93,14 @@ class ManageItemsDialog(QDialog):
         self.search_dropdown.clear()
         if self.dropdown.currentText() == "Books":
             self.search_dropdown.addItems(["ID", "Book Name", "Author", "Edition", "Pages", "Photocopy Price", "Book Price", "Quantity"])
+            self.table_widget.setColumnCount(8)
             self.table_widget.setHorizontalHeaderLabels(["ID", "Book Name", "Author", "Edition", "Pages", "Photocopy Price", "Book Price", "Quantity"])
+            self.search_bar.setPlaceholderText("Search Books...")
         else:
             self.search_dropdown.addItems(["ID", "Category", "Product Name", "Brand", "Color", "Price", "Quantity"])
+            self.table_widget.setColumnCount(7)
             self.table_widget.setHorizontalHeaderLabels(["ID", "Category", "Product Name", "Brand", "Color", "Price", "Quantity"])
+            self.search_bar.setPlaceholderText("Search Office Items...")
         self.update_list()
 
     def update_list(self):
@@ -134,7 +136,7 @@ class ManageItemsDialog(QDialog):
             self.add_button.setEnabled(False)
             self.subtract_button.setEnabled(False)
             self.delete_button.setEnabled(False)
-    
+
     def save_to_desktop(self):
         current_time = datetime.datetime.now().strftime("%d-%m-%y_%H:%M")
         if self.dropdown.currentText() == "Books":
@@ -143,18 +145,21 @@ class ManageItemsDialog(QDialog):
         else:
             file_path = LATEST_OFFICE_PATH
             filename = f"Office_Items_{current_time}.csv"
-    
+
         if sys.platform == "win32":
             save_path = os.path.join(os.getenv('USERPROFILE'), 'Desktop', filename)
         else:
             save_path = os.path.join(os.path.expanduser('~'), filename)
-    
+
         try:
             with open(file_path, 'r') as file:
                 data = file.read()
             with open(save_path, 'w') as file:
                 file.write(data)
-            QMessageBox.information(self, "Success", f"File saved to {save_path}")
+            if sys.platform == "win32":
+                QMessageBox.information(self, "Success", f"{filename} successfully saved to Desktop")
+            else:
+                QMessageBox.information(self, "Success", f"{filename} successfully saved to Home")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save file: {e}")
 
@@ -189,7 +194,6 @@ class ManageItemsDialog(QDialog):
                 writer = csv.writer(file)
                 writer.writerows(rows)
 
-            QMessageBox.information(self, "Success", "Item count updated successfully")
             self.update_list()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to update item: {e}")
@@ -224,7 +228,7 @@ class ManageItemsDialog(QDialog):
             with open(file_path, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
-            if reply == QMessageBox.Yes:
+            if not current_qtty > 1 and reply == QMessageBox.Yes:
                 QMessageBox.information(self, "Success", "Item removed from inventory")
             self.update_list()
         except Exception as e:
@@ -239,16 +243,20 @@ class ManageItemsDialog(QDialog):
             file_path = LATEST_OFFICE_PATH
 
         try:
-            with open(file_path, 'r') as file:
-                reader = csv.reader(file)
-                rows = [row for row in reader if row[0] != fields[0]]
+            reply = QMessageBox.question(self, 'Confirmation', "Are you sure you want to delete this item from the stock?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                with open(file_path, 'r') as file:
+                    reader = csv.reader(file)
+                    rows = [row for row in reader if row[0] != fields[0]]
 
-            with open(file_path, 'w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerows(rows)
+                with open(file_path, 'w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerows(rows)
 
-            QMessageBox.information(self, "Success", "Item deleted successfully")
-            self.update_list()
+                QMessageBox.information(self, "Success", "Item deleted successfully")
+                self.update_list()
+            else:
+                pass
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to delete item: {e}")
 
@@ -270,26 +278,37 @@ class EditBookDialog(QDialog):
 
         self.name_input = QLineEdit(fields[1] if len(fields) > 1 else "")
         self.name_input.setFont(self.font)
+        self.name_input.setPlaceholderText("Book Name")
         self.layout.addWidget(self.name_input)
 
         self.author_input = QLineEdit(fields[2] if len(fields) > 2 else "")
         self.author_input.setFont(self.font)
+        self.author_input.setPlaceholderText("Author")
         self.layout.addWidget(self.author_input)
 
         self.edition_input = QLineEdit(fields[3] if len(fields) > 3 else "")
         self.edition_input.setFont(self.font)
+        self.edition_input.setPlaceholderText("Edition")
         self.layout.addWidget(self.edition_input)
 
         self.pages_input = QLineEdit(fields[4] if len(fields) > 4 else "")
         self.pages_input.setFont(self.font)
+        self.pages_input.setPlaceholderText("Pages")
         self.layout.addWidget(self.pages_input)
 
-        self.price_input = QLineEdit(fields[5] if len(fields) > 5 else "")
-        self.price_input.setFont(self.font)
-        self.layout.addWidget(self.price_input)
+        self.photocopyprice_input = QLineEdit(fields[5] if len(fields) > 5 else "")
+        self.photocopyprice_input.setFont(self.font)
+        self.photocopyprice_input.setPlaceholderText("Photocopy Price")
+        self.layout.addWidget(self.photocopyprice_input)
 
-        self.qtty_input = QLineEdit(fields[6] if len(fields) > 6 else "")
+        self.bookprice_input = QLineEdit(fields[6] if len(fields) > 6 else "")
+        self.bookprice_input.setFont(self.font)
+        self.bookprice_input.setPlaceholderText("Book Price")
+        self.layout.addWidget(self.bookprice_input)
+
+        self.qtty_input = QLineEdit(fields[7] if len(fields) > 7 else "")
         self.qtty_input.setFont(self.font)
+        self.qtty_input.setPlaceholderText("Quantity")
         self.layout.addWidget(self.qtty_input)
 
         self.save_button = QPushButton("Save")
@@ -304,10 +323,34 @@ class EditBookDialog(QDialog):
             self.author_input.text() or "-",
             self.edition_input.text() or "-",
             self.pages_input.text() or "-",
-            self.price_input.text() or "-",
+            self.photocopyprice_input.text() or "-",
+            self.bookprice_input.text() or "-",
             self.qtty_input.text() or "-"
         ]
-
+        
+        # Ensure that name is not empty or a single sign
+        if data[1] == "-" or len(data[1].strip()) == 0:
+            QMessageBox.critical(self, "Error", "Name cannot be empty.")
+            return
+        
+        # Ensure that photocopyprice is a non-zero positive number
+        try:
+            photocopyprice = float(data[5])
+            if photocopyprice <= 0:
+                raise ValueError("Photocopy Price must be a positive number.")
+        except ValueError:
+            QMessageBox.critical(self, "Error", "Invalid Photocopy Price. It must be a positive number.")
+            return
+        
+        # Ensure that qtty is a non-zero positive number
+        try:
+            qtty = int(data[7])
+            if qtty <= 0:
+                raise ValueError("Quantity must be a positive number.")
+        except ValueError:
+            QMessageBox.critical(self, "Error", "Invalid Quantity. It must be a positive integer.")
+            return
+        
         try:
             with open(LATEST_BOOKS_PATH, 'r') as file:
                 reader = csv.reader(file)
@@ -316,11 +359,11 @@ class EditBookDialog(QDialog):
                     if row[0] == data[0]:
                         row[1:] = data[1:]
                         break
-
+        
             with open(LATEST_BOOKS_PATH, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
-
+        
             QMessageBox.information(self, "Success", "Item updated successfully")
             self.close()
         except Exception as e:
@@ -350,15 +393,19 @@ class EditOfficeItemDialog(QDialog):
         self.product_name_input.setFont(self.font)
         self.layout.addWidget(self.product_name_input)
 
-        self.color_input = QLineEdit(fields[3] if len(fields) > 3 else "")
+        self.brand_input = QLineEdit(fields[3] if len(fields) > 3 else "")
+        self.brand_input.setFont(self.font)
+        self.layout.addWidget(self.brand_input)
+
+        self.color_input = QLineEdit(fields[4] if len(fields) > 4 else "")
         self.color_input.setFont(self.font)
         self.layout.addWidget(self.color_input)
 
-        self.price_input = QLineEdit(fields[4] if len(fields) > 4 else "")
+        self.price_input = QLineEdit(fields[5] if len(fields) > 5 else "")
         self.price_input.setFont(self.font)
         self.layout.addWidget(self.price_input)
 
-        self.qtty_input = QLineEdit(fields[5] if len(fields) > 5 else "")
+        self.qtty_input = QLineEdit(fields[6] if len(fields) > 6 else "")
         self.qtty_input.setFont(self.font)
         self.layout.addWidget(self.qtty_input)
 
@@ -372,11 +419,40 @@ class EditOfficeItemDialog(QDialog):
             self.id_label.text().split(": ")[1],
             self.type_input.text() or "-",
             self.product_name_input.text() or "-",
+            self.brand_input.text() or "-",
             self.color_input.text() or "-",
             self.price_input.text() or "-",
             self.qtty_input.text() or "-"
         ]
 
+        # Ensure that category is not empty or a single sign
+        if data[1] == "-" or len(data[1].strip()) == 0:
+            QMessageBox.critical(self, "Error", "Category cannot be empty.")
+            return
+
+        # Ensure that product name is not empty or a single sign
+        if data[2] == "-" or len(data[2].strip()) == 0:
+            QMessageBox.critical(self, "Error", "Product Name cannot be empty.")
+            return
+    
+        # Ensure that price is a non-zero positive number
+        try:
+            price = float(data[4])
+            if price <= 0:
+                raise ValueError("Price must be a positive number.")
+        except ValueError:
+            QMessageBox.critical(self, "Error", "Invalid Price. It must be a positive number.")
+            return
+    
+        # Ensure that qtty is a non-zero positive number
+        try:
+            qtty = int(data[5])
+            if qtty <= 0:
+                raise ValueError("Quantity must be a positive number.")
+        except ValueError:
+            QMessageBox.critical(self, "Error", "Invalid Quantity. It must be a positive integer.")
+            return
+    
         try:
             with open(LATEST_OFFICE_PATH, 'r') as file:
                 reader = csv.reader(file)
@@ -385,11 +461,11 @@ class EditOfficeItemDialog(QDialog):
                     if row[0] == data[0]:
                         row[1:] = data[1:]
                         break
-
+    
             with open(LATEST_OFFICE_PATH, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
-
+    
             QMessageBox.information(self, "Success", "Item updated successfully")
             self.close()
         except Exception as e:

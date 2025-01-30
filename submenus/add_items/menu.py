@@ -12,31 +12,33 @@ SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
 LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.csv')
 LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.csv')
 
-try:
-    os.makedirs(SAVES_PATH, exist_ok=True)
-
-    if not os.path.isfile(LATEST_BOOKS_PATH):
-        with open(LATEST_BOOKS_PATH, 'w') as file:
-            pass
-    if not os.path.isfile(LATEST_OFFICE_PATH):
-        with open(LATEST_OFFICE_PATH, 'w') as file:
-            pass
-
-    with open(LATEST_BOOKS_PATH, 'r') as file:
-        books_count = sum(1 for line in file if line.strip())
-    with open(LATEST_OFFICE_PATH, 'r') as file:
-        office_count = sum(1 for line in file if line.strip())
-except Exception as e:
-    print(e)
-
 class AddItemsDialog(QDialog):
     def __init__(self, parent=None):
+        global books_count
+        global office_count
         super().__init__(parent)
         self.setWindowTitle("Add Items")
         self.setGeometry(100, 100, 400, 300)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+
+        try:
+            os.makedirs(SAVES_PATH, exist_ok=True)
+
+            if not os.path.isfile(LATEST_BOOKS_PATH):
+                with open(LATEST_BOOKS_PATH, 'w') as file:
+                    pass
+            if not os.path.isfile(LATEST_OFFICE_PATH):
+                with open(LATEST_OFFICE_PATH, 'w') as file:
+                    pass
+
+            with open(LATEST_BOOKS_PATH, 'r') as file:
+                books_count = sum(1 for line in file if line.strip())
+            with open(LATEST_OFFICE_PATH, 'r') as file:
+                office_count = sum(1 for line in file if line.strip())
+        except Exception as e:
+            print(e)
 
         self.dropdown = QComboBox()
         self.dropdown.addItems(["Books", "Office Items"])
@@ -59,6 +61,8 @@ class AddItemsDialog(QDialog):
         self.update_form()
 
     def update_form(self):
+        global books_count
+        global office_count
         for i in reversed(range(self.form_layout.count())):
             self.form_layout.itemAt(i).widget().deleteLater()
 
@@ -166,11 +170,23 @@ class AddItemsDialog(QDialog):
                     self.pages_input.text() or "-",
                     self.photocopyprice_input.text() or "-",
                     self.bookprice_input.text() or "-",
-                    self.qtty_input.text() or "1"
+                    self.qtty_input.text() or "-"
                 ]
+
                 file_path = LATEST_BOOKS_PATH
-                if not data[-3].isnumeric():
-                    raise ValueError("Invalid Photocopy Price")
+    
+                # Ensure that name is not empty or a single sign
+                if data[1] == "-" or len(data[1].strip()) == 0:
+                    raise ValueError("Name cannot be empty.")
+    
+                # Ensure that photocopyprice is a non-zero positive number
+                try:
+                    photocopyprice = float(data[5])
+                    if photocopyprice <= 0:
+                        raise ValueError("Photocopy Price must be a positive number.")
+                except ValueError:
+                    raise ValueError("Invalid Photocopy Price. It must be a positive number.")
+    
             else:
                 data = [
                     office_count + 1,
@@ -179,17 +195,35 @@ class AddItemsDialog(QDialog):
                     self.brand_input.text() or "-",
                     self.color_input.text() or "-",
                     self.price_input.text() or "-",
-                    self.qtty_input.text() or "1"
+                    self.qtty_input.text() or "-"
                 ]
-                file_path = LATEST_OFFICE_PATH
-                if not data[-2].isnumeric():
-                    raise ValueError("Invalid Item Price")
 
-            if data[1] == "-":
-                return
-            if not data[-1].isnumeric():
-                raise ValueError("Invalid Quantity")
-            
+                file_path = LATEST_OFFICE_PATH
+
+                # Ensure that category is not empty or a single sign
+                if data[1] == "-" or len(data[1].strip()) == 0:
+                    raise ValueError("Category cannot be empty.")
+
+                # Ensure that name is not empty or a single sign
+                if data[2] == "-" or len(data[2].strip()) == 0:
+                    raise ValueError("Product Name cannot be empty.")
+    
+                # Ensure that price is a non-zero positive number
+                try:
+                    price = float(data[5])
+                    if price <= 0:
+                        raise ValueError("Price must be a positive number.")
+                except ValueError:
+                    raise ValueError("Invalid Price. It must be a positive number.")
+    
+            # Ensure that qtty is a non-zero positive number
+            try:
+                qtty = int(data[-1])
+                if qtty <= 0:
+                    raise ValueError("Quantity must be a positive number.")
+            except ValueError:
+                raise ValueError("Invalid Quantity. It must be a positive integer.")
+    
             exists = False
             with open(file_path, 'r') as file:
                 reader = csv.reader(file)
@@ -199,28 +233,27 @@ class AddItemsDialog(QDialog):
                         row[-1] = str(int(row[-1]) + int(data[-1]))
                         exists = True
                         break
-
+    
             if not exists:
                 rows.append(data)
-
+    
             with open(file_path, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(rows)
-            
+    
             if file_path == LATEST_BOOKS_PATH:
                 books_count += 1
             else:
                 office_count += 1
-            
+    
             if not exists:
                 QMessageBox.information(self, "Success", "Item added successfully")
             else:
                 QMessageBox.information(self, "Success", "Item count updated successfully")
-            
+    
             self.close()
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Ensure you filled all the required fields correctly")
-            print(e)
+        except ValueError as ve:
+            QMessageBox.critical(self, "Error", str(ve))
 
 def open_add_menu(parent):
     dialog = AddItemsDialog(parent)

@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QSizePolicy, QHBoxLayout
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from submenus.add_items.menu import open_add_menu
@@ -23,7 +23,10 @@ class MainMenu(QMainWindow):
         self.setWindowTitle("PyStocking - Main Menu")
 
         # Set window size
-        self.setFixedSize(800, 450)
+        self.setGeometry(100, 100, 800, 450)
+
+        self.font = QFont()
+        self.font.setPointSize(14)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -32,7 +35,7 @@ class MainMenu(QMainWindow):
         layout.setAlignment(Qt.AlignCenter)
 
         # Title label
-        title_label = QLabel("Main Menu")
+        title_label = QLabel("Welcome to PyStocking!")
         title_font = QFont()
         title_font.setPointSize(24)
         title_font.setBold(True)
@@ -49,31 +52,51 @@ class MainMenu(QMainWindow):
         line_count_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(line_count_label)
 
+        # Buttons layout
+        buttons_layout = QVBoxLayout()
+        buttons_layout.setAlignment(Qt.AlignCenter)
+
         # Add items button
         add_button = QPushButton("Add Items")
-        add_button.setFixedSize(200, 50)
-        add_button.setStyleSheet("font-size: 16px;")
+        add_button.setFont(self.font)
         add_button.setToolTip("Add new items to the stock")
-        add_button.clicked.connect(lambda: (open_add_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
-        layout.addWidget(add_button)
+        add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        add_button.setFixedHeight(60)
+        buttons_layout.addWidget(add_button)
 
         # Manage items button
-        manage_button = QPushButton("Manage Items")
-        manage_button.setFixedSize(200, 50)
-        manage_button.setStyleSheet("font-size: 16px;")
-        manage_button.setToolTip("Manage the stock")
-        manage_button.clicked.connect(lambda: (open_manage_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
-        layout.addWidget(manage_button)
+        manage_button = QPushButton("Manage and Search Items")
+        manage_button.setFont(self.font)
+        manage_button.setToolTip("Manage and search items from the stock")
+        manage_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        manage_button.setFixedHeight(60)
+        buttons_layout.addWidget(manage_button)
 
         # Exit button
-        exit_button = QPushButton("Exit")
-        exit_button.setFixedSize(200, 50)
-        exit_button.setStyleSheet("font-size: 16px;")
+        exit_button = QPushButton("Close program")
+        exit_button.setFont(self.font)
         exit_button.setToolTip("Exit the program")
-        exit_button.clicked.connect(self.close)
-        layout.addWidget(exit_button)
+        exit_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        exit_button.setFixedHeight(60)
+        buttons_layout.addWidget(exit_button)
+
+        # Add buttons layout to main layout
+        layout.addLayout(buttons_layout)
 
         central_widget.setLayout(layout)
+
+        # Adjust button widths to match the title width
+        self.adjust_button_widths(title_label, [add_button, manage_button, exit_button])
+
+        # Connect button actions
+        add_button.clicked.connect(lambda: (open_add_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
+        manage_button.clicked.connect(lambda: (open_manage_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
+        exit_button.clicked.connect(self.close)
+
+    def adjust_button_widths(self, reference_label, buttons):
+        reference_width = reference_label.sizeHint().width()
+        for button in buttons:
+            button.setFixedWidth(reference_width)
 
     # Get line count - Create file
     def get_line_count(self):
@@ -95,22 +118,22 @@ class MainMenu(QMainWindow):
                     pass  # Create an empty file if it doesn't exist
 
             with open(LATEST_BOOKS_PATH, 'r') as file:
-                line_count[0] = sum(1 for _ in file)
+                line_count['books'] = sum(1 for _ in file)
             with open(LATEST_OFFICE_PATH, 'r') as file:
-                line_count[1] = sum(1 for _ in file)
+                line_count['office'] = sum(1 for _ in file)
             return line_count
         except Exception as e:
             return f"Error: {e}"
 
     def update_line_count(self, line_count):
-        if line_count[0] == 0 and line_count[1] == 0:
+        if line_count['books'] == 0 and line_count['office'] == 0:
             line_count_label = "No items in stock"
-        elif line_count[0] == 0:
-            line_count_label = f"There are {line_count[1]} office item(s) in stock"
-        elif line_count[1] == 0:
-            line_count_label = f"There are {line_count[0]} book(s) in stock"
+        elif line_count['books'] == 0:
+            line_count_label = f"There are {line_count['office']} office item(s) in stock"
+        elif line_count['office'] == 0:
+            line_count_label = f"There are {line_count['books']} book(s) in stock"
         else:
-            line_count_label = f"There are {line_count[0]} book(s) and {line_count[1]} office item(s) in stock"
+            line_count_label = f"There are {line_count['books']} book(s) and {line_count['office']} office item(s) in stock"
         return line_count_label
     
 def main():
