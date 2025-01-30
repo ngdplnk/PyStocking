@@ -4,8 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from submenus.add_items.menu import open_add_menu
-from submenus.search_items.menu import open_search_menu
-from submenus.del_items.menu import open_del_menu
+from submenus.manage_items.menu import open_manage_menu
 
 # Get PATHS
 if sys.platform == "win32":
@@ -58,24 +57,19 @@ class MainMenu(QMainWindow):
         add_button.clicked.connect(lambda: (open_add_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
         layout.addWidget(add_button)
 
-        # Search items button
-        search_button = QPushButton("Search Items")
-        search_button.setFixedSize(200, 50)
-        search_button.setStyleSheet("font-size: 16px;")
-        search_button.clicked.connect(lambda: open_search_menu(self))
-        layout.addWidget(search_button)
-
-        # Delete items button
-        del_button = QPushButton("Delete Items")
-        del_button.setFixedSize(200, 50)
-        del_button.setStyleSheet("font-size: 16px;")
-        del_button.clicked.connect(lambda: open_del_menu(self))
-        layout.addWidget(del_button)
+        # Manage items button
+        manage_button = QPushButton("Manage Items")
+        manage_button.setFixedSize(200, 50)
+        manage_button.setStyleSheet("font-size: 16px;")
+        manage_button.setToolTip("Manage the stock")
+        manage_button.clicked.connect(lambda: (open_manage_menu(self), line_count_label.setText(self.update_line_count(self.get_line_count()))))
+        layout.addWidget(manage_button)
 
         # Exit button
         exit_button = QPushButton("Exit")
         exit_button.setFixedSize(200, 50)
         exit_button.setStyleSheet("font-size: 16px;")
+        exit_button.setToolTip("Exit the program")
         exit_button.clicked.connect(self.close)
         layout.addWidget(exit_button)
 
