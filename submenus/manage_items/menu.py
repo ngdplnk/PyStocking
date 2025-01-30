@@ -61,6 +61,7 @@ class ManageItemsDialog(QDialog):
         self.table_widget = QTableWidget()
         self.table_widget.setFont(self.font)
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.verticalHeader().setVisible(False)
         self.table_widget.itemSelectionChanged.connect(self.update_buttons)
         self.table_widget.itemDoubleClicked.connect(self.edit_item)
         self.table_widget.setSortingEnabled(True)

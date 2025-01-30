@@ -42,7 +42,7 @@ class AdvancedOptionsDialog(QDialog):
 
         self.subtitle_label = QLabel("Be careful, these options are dangerous and\nyou could delete something you don't want to.\nContinue at your own risk.")
         self.subtitle_label_font = QFont()
-        self.subtitle_label_font.setPointSize(18)
+        self.subtitle_label_font.setPointSize(16)
         self.subtitle_label.setFont(self.subtitle_label_font)
         self.subtitle_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.subtitle_label)
@@ -76,7 +76,7 @@ class AdvancedOptionsDialog(QDialog):
     def open_saved_files_folder(self):
         reply = QMessageBox.question(self, 'Warning', 
                                      "It's not recommended to enter this folder unless you want to restore an old export you did in the past. "
-                                     "DO NOT TOUCH latest_books.csv nor latest_office.csv. Do you want to proceed anyways?", 
+                                     "Do you want to proceed anyways?", 
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             if not os.path.exists(SAVES_PATH):
@@ -98,12 +98,11 @@ class AdvancedOptionsDialog(QDialog):
 
     def about_this_program(self):
         quote = random.choice(list(MOTIVATIONAL_QUOTES.values()))
-        about_text = (f"PyStocking\n"
-                      f"Version: 1.0\n"
-                      f"Developer: Your Name\n"
-                      f"License: MIT\n"
-                      f"© 2023 Your Company\n\n"
-                      f"Motivational Quote: \"{quote}\"")
+        about_text = (f"<b>PyStocking</b><br>"
+                      f"Version: 1.0<br>"
+                      f"Developer: Nico (<a href='https://github.com/ngdplnk'>@ngdplnk</a>)<br>"
+                      f"© 2025 Your Company<br><br>"
+                      f"\"{quote}\"")
         QMessageBox.information(self, "About This Program", about_text)
 
 def open_advanced_options_menu(parent):
