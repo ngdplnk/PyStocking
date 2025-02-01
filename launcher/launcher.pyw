@@ -1,5 +1,6 @@
 import os
 import sys
+import requests
 import subprocess
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
@@ -24,17 +25,6 @@ os.makedirs(SUBMENUS_PATH, exist_ok=True)
 os.makedirs(ADDITEMS_PATH, exist_ok=True)
 os.makedirs(ADVOPTIONS_PATH, exist_ok=True)
 os.makedirs(MANAGEITEMS_PATH, exist_ok=True)
-
-try:
-    import requests
-except ImportError:
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        import requests
-    except Exception:
-        app = QApplication(sys.argv)
-        QMessageBox.critical(None, "Error", "Could not install the 'requests' module. Please, install it manually.")
-        sys.exit(1)
 
 try:
     # Icon

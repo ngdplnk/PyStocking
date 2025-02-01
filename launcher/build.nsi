@@ -4,6 +4,7 @@
 !define LAUNCHER_PATH "<TYPE THE LAUNCHER.PYW PATH HERE>"
 !define MAIN_PATH "<TYPE THE MAIN.PYW PATH HERE>"
 !define SUBMENUS_PATH "<TYPE THE SUBMENUS FOLDER PATH HERE>"
+!define REQUIREMENTS_PATH "<TYPE THE REQUIREMENTS.TXT PATH HERE>"
 
 ############################################################
 
@@ -54,6 +55,13 @@ Section "MainSection" SEC01
   # Copy icon
   SetOutPath $APPDATA\PyStocking\launcher
   File /oname=icon.ico "${ICON_PATH}"
+
+  # Copy requirements.txt
+  SetOutPath $APPDATA\PyStocking
+  File /oname=requirements.txt "${REQUIREMENTS_PATH}"
+
+  # Install pip requirements
+  ExecWait '@"$SYSDIR\cmd.exe" /C "pip install -r $APPDATA\PyStocking\requirements.txt"'
 
   # Create a desktop shortcut
   CreateShortCut "$DESKTOP\PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
