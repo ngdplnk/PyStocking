@@ -2,7 +2,7 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QSizePolicy, QHBoxLayout
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from submenus.add_items.menu import open_add_menu
 from submenus.manage_items.menu import open_manage_menu
 from submenus.advanced_options.menu import open_advanced_options_menu
@@ -15,10 +15,14 @@ else:
 SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
 LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.csv')
 LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.csv')
+ICON_PATH = os.path.join(PROGRAM_PATH, 'launcher', 'icon.ico')
 
 class MainMenu(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        # Set window icon
+        self.setWindowIcon(QIcon(ICON_PATH))
 
         # Window title
         self.setWindowTitle("PyStocking - Main Menu")
@@ -148,6 +152,7 @@ class MainMenu(QMainWindow):
     
 def main():
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(ICON_PATH))
     main_menu = MainMenu()
     main_menu.show()
     sys.exit(app.exec_())
