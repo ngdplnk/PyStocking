@@ -28,32 +28,32 @@ os.makedirs(MANAGEITEMS_PATH, exist_ok=True)
 
 try:
     # Icon
-    link = "<link>"
+    link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/icon.ico"
     code = requests.get(link)
     with open(ICON_PATH, 'wb') as writecode:
         writecode.write(code.content)
     # Launcher Script
-    link = "<link>"
+    link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/launcher.pyw"
     code = requests.get(link)
     with open(LAUNCHERSCRIPT_PATH, 'wb') as writecode:
         writecode.write(code.content)
     # Add Items Menu
-    link = "<link>"
+    link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/submenus/add_items/menu.py"
     code = requests.get(link)
     with open(ADDITEMS_MENU_PATH, 'wb') as writecode:
         writecode.write(code.content)
     # Advanced Options Menu
-    link = "<link>"
+    link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/submenus/advanced_options/menu.py"
     code = requests.get(link)
     with open(ADVOPTIONS_MENU_PATH, 'wb') as writecode:
         writecode.write(code.content)
     # Manage Items Menu
-    link = "<link>"
+    link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/submenus/manage_items/menu.py"
     code = requests.get(link)
     with open(MANAGEITEMS_MENU_PATH, 'wb') as writecode:
         writecode.write(code.content)
     # Main Program
-    link = "<link>"
+    link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/main.pyw"
     code = requests.get(link)
     with open(MAIN_PATH, 'wb') as writecode:
         writecode.write(code.content)

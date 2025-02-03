@@ -51,49 +51,39 @@ To get started with PyStocking, follow these steps:
     ```bash
     sudo apt update && sudo apt install -y python3 python3-venv python3-pip
     ```
-2. Clone this repository:
+2. Download the `launcher/launcher.pyw` file from the repository:
     ```bash
-    git clone https://github.com/ngdplnk/PyStocking.git
+    wget https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/launcher.pyw -P ~/.pystocking/launcher/
     ```
-3. Navigate to the cloned repository:
+3. Run the application:
     ```bash
-    cd PyStocking
+    python3 ~/.pystocking/launcher/launcher.pyw
     ```
-4. Create and activate a virtual environment inside the cloned repo folder:
+4. Close the application.
+
+Next time, you can open the program from `~/.pystocking/launcher/launcher.pyw`.
+
+(Optional) Create a desktop shortcut:
+- Create a new file `pystocking.desktop` with the following content:
+    ```desktop
+    [Desktop Entry]
+    Name=PyStocking
+    Comment=Stocking management tool
+    Exec=sh -c 'python3 ~/.pystocking/launcher/launcher.pyw'
+    Icon=~/.pystocking/launcher/icon.png
+    Terminal=false
+    Type=Application
+    ```
+- Make the file executable:
     ```bash
-    python3 -m venv venv
-    source venv/bin/activate
+    chmod +x pystocking.desktop
     ```
-5. Install the required Python packages:
+- Move the file to your desktop or applications directory:
     ```bash
-    pip install -r requirements.txt
+    mv pystocking.desktop <your desktop or applications path>
     ```
-6. Run the application (make sure to activate the virtual environment first):
-    ```bash
-    source venv/bin/activate
-    python3 launcher/launcher.pyw
-    ```
-7. (Optional) Create a desktop shortcut:
-    - Create a new file `pystocking.desktop` with the following content:
-        ```desktop
-        [Desktop Entry]
-        Name=PyStocking
-        Comment=Stocking management tool
-        Exec=sh -c 'cd /path/to/cloned/repo && source venv/bin/activate && python3 launcher/launcher.pyw'
-        Icon=/path/to/cloned/repo/launcher/icon.png
-        Terminal=false
-        Type=Application
-        ```
-    - Replace `/path/to/cloned/repo` with the actual path.
-    - Make the file executable:
-        ```bash
-        chmod +x pystocking.desktop
-        ```
-    - Move the file to your desktop or applications directory:
-        ```bash
-        mv pystocking.desktop ~/Desktop/
-        ```
-8. Enjoy!
+
+Enjoy!
 
 ## Build PyStocking Installer (for Windows) by Yourself
 
