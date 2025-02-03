@@ -1,7 +1,7 @@
 import os
 import sys
 import csv
-from PyQt5.QtWidgets import (QMessageBox, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox)
+from PyQt5.QtWidgets import (QMessageBox, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox, QInputDialog)
 from PyQt5.QtGui import QFont
 
 if sys.platform == "win32":
@@ -9,8 +9,10 @@ if sys.platform == "win32":
 else:
     PROGRAM_PATH = os.path.join(os.path.expanduser('~'), '.pystocking')
 SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
-LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.csv')
-LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.csv')
+CATEGORIES_PATH = os.path.join(SAVES_PATH, 'cats.pystk')
+BRANDS_PATH = os.path.join(SAVES_PATH, 'brands.pystk')
+LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.pystk')
+LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.pystk')
 
 class AddItemsDialog(QDialog):
     def __init__(self, parent=None):
@@ -19,27 +21,30 @@ class AddItemsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Add Items")
         self.setGeometry(100, 100, 400, 300)
-
+    
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-
+    
         try:
             os.makedirs(SAVES_PATH, exist_ok=True)
-
+    
             if not os.path.isfile(LATEST_BOOKS_PATH):
                 with open(LATEST_BOOKS_PATH, 'w') as file:
                     pass
             if not os.path.isfile(LATEST_OFFICE_PATH):
                 with open(LATEST_OFFICE_PATH, 'w') as file:
                     pass
-
+    
             with open(LATEST_BOOKS_PATH, 'r') as file:
                 books_count = sum(1 for line in file if line.strip())
             with open(LATEST_OFFICE_PATH, 'r') as file:
                 office_count = sum(1 for line in file if line.strip())
+    
+            self.load_categories()
+            self.load_brands()
         except Exception as e:
             print(e)
-
+    
         self.dropdown = QComboBox()
         self.dropdown.addItems(["Books", "Office Items"])
         self.dropdown_font = QFont()
@@ -48,19 +53,67 @@ class AddItemsDialog(QDialog):
         self.dropdown.currentIndexChanged.connect(self.update_form)
         self.dropdown.setToolTip("Select the type of item you want to add.")
         self.layout.addWidget(self.dropdown)
-
+    
         self.form_layout = QVBoxLayout()
         self.layout.addLayout(self.form_layout)
-
+    
         self.save_button = QPushButton("Save")
         self.save_button_font = QFont()
         self.save_button_font.setPointSize(14)
         self.save_button.setFont(self.save_button_font)
         self.save_button.clicked.connect(self.save_item)
-        self.save_button.setToolTip("Save the item to the inventory.")
+        self.save_button.setToolTip("Save the item to the stock.")
         self.layout.addWidget(self.save_button)
-
+    
         self.update_form()
+
+    def load_categories(self):
+        self.categories = set()
+        if os.path.isfile(CATEGORIES_PATH):
+            with open(CATEGORIES_PATH, 'r') as file:
+                reader = csv.reader(file)
+                self.categories = set(row[0] for row in reader)
+        else:
+            with open(LATEST_OFFICE_PATH, 'r') as file:
+                reader = csv.reader(file)
+                self.categories = set(row[1] for row in reader if row[1].strip())
+            self.save_categories()
+
+    def save_categories(self):
+        with open(CATEGORIES_PATH, 'w', newline='') as file:
+            writer = csv.writer(file)
+            for category in sorted(self.categories):
+                writer.writerow([category])
+
+    def load_brands(self):
+        self.brands = set()
+        if os.path.isfile(BRANDS_PATH):
+            with open(BRANDS_PATH, 'r') as file:
+                reader = csv.reader(file)
+                self.brands = set(row[0] for row in reader)
+        else:
+            with open(LATEST_OFFICE_PATH, 'r') as file:
+                reader = csv.reader(file)
+                self.brands = set(row[3] for row in reader if row[3].strip())
+            self.save_brands()
+
+    def save_brands(self):
+        with open(BRANDS_PATH, 'w', newline='') as file:
+            writer = csv.writer(file)
+            for brand in sorted(self.brands):
+                writer.writerow([brand])
+
+    def get_next_available_id(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                reader = csv.reader(file)
+                ids = sorted(int(row[0]) for row in reader if row[0].isdigit())
+                for i in range(1, len(ids) + 2):
+                    if i not in ids:
+                        return i
+        except Exception as e:
+            print(e)
+        return 1
 
     def update_form(self):
         global books_count
@@ -79,7 +132,8 @@ class AddItemsDialog(QDialog):
         self.layout.addLayout(self.form_layout)
     
         if self.dropdown.currentText() == "Books":
-            self.id_label = QLabel(f"ID: {books_count + 1}")
+            new_id = self.get_next_available_id(LATEST_BOOKS_PATH)
+            self.id_label = QLabel(f"ID: {new_id}")
             self.id_label_font = QFont()
             self.id_label_font.setPointSize(14)
             self.id_label.setFont(self.id_label_font)
@@ -106,7 +160,7 @@ class AddItemsDialog(QDialog):
             self.form_layout.addLayout(self.author_layout)
             
             self.edition_layout = QHBoxLayout()
-            self.edition_label = QLabel("Edition:")
+            self.edition_label = QLabel("Editorial:")
             self.edition_label.setFont(self.id_label_font)
             self.edition_layout.addWidget(self.edition_label)
             self.edition_input = QLineEdit()
@@ -155,7 +209,8 @@ class AddItemsDialog(QDialog):
             self.qtty_layout.addWidget(self.qtty_input)
             self.form_layout.addLayout(self.qtty_layout)
         else:
-            self.id_label = QLabel(f"ID: {office_count + 1}")
+            new_id = self.get_next_available_id(LATEST_OFFICE_PATH)
+            self.id_label = QLabel(f"ID: {new_id}")
             self.id_label_font = QFont()
             self.id_label_font.setPointSize(14)
             self.id_label.setFont(self.id_label_font)
@@ -165,10 +220,13 @@ class AddItemsDialog(QDialog):
             self.type_label = QLabel("Category:")
             self.type_label.setFont(self.id_label_font)
             self.type_layout.addWidget(self.type_label)
-            self.type_input = QLineEdit()
-            self.type_input.setFont(self.id_label_font)
-            self.type_input.setToolTip("Enter the category of the product.")
-            self.type_layout.addWidget(self.type_input)
+            self.type_dropdown = QComboBox()
+            self.type_dropdown.setFont(self.id_label_font)
+            self.type_dropdown.setToolTip("Select or add a category.")
+            self.type_dropdown.setMaxVisibleItems(10)  # Set the maximum number of visible items
+            self.update_category_dropdown()
+            self.type_dropdown.currentIndexChanged.connect(self.check_add_category)
+            self.type_layout.addWidget(self.type_dropdown)
             self.form_layout.addLayout(self.type_layout)
             
             self.product_name_layout = QHBoxLayout()
@@ -185,10 +243,13 @@ class AddItemsDialog(QDialog):
             self.brand_label = QLabel("Brand:")
             self.brand_label.setFont(self.id_label_font)
             self.brand_layout.addWidget(self.brand_label)
-            self.brand_input = QLineEdit()
-            self.brand_input.setFont(self.id_label_font)
-            self.brand_input.setToolTip("Enter the brand of the product.")
-            self.brand_layout.addWidget(self.brand_input)
+            self.brand_dropdown = QComboBox()
+            self.brand_dropdown.setFont(self.id_label_font)
+            self.brand_dropdown.setToolTip("Select or add a brand.")
+            self.brand_dropdown.setMaxVisibleItems(10)  # Set the maximum number of visible items
+            self.update_brand_dropdown()
+            self.brand_dropdown.currentIndexChanged.connect(self.check_add_brand)
+            self.brand_layout.addWidget(self.brand_dropdown)
             self.form_layout.addLayout(self.brand_layout)
             
             self.color_layout = QHBoxLayout()
@@ -220,7 +281,43 @@ class AddItemsDialog(QDialog):
             self.qtty_input.setToolTip("Enter the available quantity of the product.")
             self.qtty_layout.addWidget(self.qtty_input)
             self.form_layout.addLayout(self.qtty_layout)
-    
+
+    def check_add_category(self):
+        if self.type_dropdown.currentText() == "Add Category...":
+            text, ok = QInputDialog.getText(self, "Add Category", "Enter new category name:")
+            if ok and text:
+                self.categories.add(text)
+                self.save_categories()
+                self.update_category_dropdown(text)
+            if not ok:
+                self.type_dropdown.setCurrentIndex(0)
+
+    def check_add_brand(self):
+        if self.brand_dropdown.currentText() == "Add Brand...":
+            text, ok = QInputDialog.getText(self, "Add Brand", "Enter new brand name:")
+            if ok and text:
+                self.brands.add(text)
+                self.save_brands()
+                self.update_brand_dropdown(text)
+            if not ok:
+                self.brand_dropdown.setCurrentIndex(0)
+
+    def update_category_dropdown(self, new_category=None):
+        self.type_dropdown.clear()
+        self.type_dropdown.addItem("")
+        self.type_dropdown.addItem("Add Category...")
+        self.type_dropdown.addItems(sorted(self.categories))
+        if new_category:
+            self.type_dropdown.setCurrentText(new_category)
+
+    def update_brand_dropdown(self, new_brand=None):
+        self.brand_dropdown.clear()
+        self.brand_dropdown.addItem("")
+        self.brand_dropdown.addItem("Add Brand...")
+        self.brand_dropdown.addItems(sorted(self.brands))
+        if new_brand:
+            self.brand_dropdown.setCurrentText(new_brand)
+
     def clear_layout(self, layout):
         while layout.count():
             child = layout.takeAt(0)
@@ -239,9 +336,9 @@ class AddItemsDialog(QDialog):
             self.bookprice_input.clear()
             self.qtty_input.setText("1")
         else:
-            self.type_input.clear()
+            self.type_dropdown.setCurrentIndex(0)
             self.product_name_input.clear()
-            self.brand_input.clear()
+            self.type_dropdown.setCurrentIndex(0)
             self.color_input.clear()
             self.price_input.clear()
             self.qtty_input.setText("1")
@@ -251,8 +348,9 @@ class AddItemsDialog(QDialog):
         global office_count
         try:
             if self.dropdown.currentText() == "Books":
+                new_id = self.get_next_available_id(LATEST_BOOKS_PATH)
                 data = [
-                    books_count + 1,
+                    new_id,
                     self.name_input.text() or "-",
                     self.author_input.text() or "-",
                     self.edition_input.text() or "-",
@@ -277,11 +375,12 @@ class AddItemsDialog(QDialog):
                     raise ValueError("Invalid Photocopy Price. It must be a positive number.")
     
             else:
+                new_id = self.get_next_available_id(LATEST_OFFICE_PATH)
                 data = [
-                    office_count + 1,
-                    self.type_input.text() or "-",
+                    new_id,
+                    self.type_dropdown.currentText() or "-",
                     self.product_name_input.text() or "-",
-                    self.brand_input.text() or "-",
+                    self.brand_dropdown.currentText() or "-",
                     self.color_input.text() or "-",
                     self.price_input.text() or "-",
                     self.qtty_input.text() or "1"
@@ -318,10 +417,20 @@ class AddItemsDialog(QDialog):
                 reader = csv.reader(file)
                 rows = list(reader)
                 for row in rows:
-                    if row[1] == data[1] and row[2] == data[2]:
-                        row[-1] = str(int(row[-1]) + int(data[-1]))
-                        exists = True
-                        break
+                    if self.dropdown.currentText() == 'Books':
+                        if row[1] == data[1] and row[2] == data[2]:
+                            row[-1] = str(int(row[-1]) + int(data[-1]))
+                            existent_item = row[1]
+                            added_item_count = int(data[-1])
+                            exists = True
+                            break
+                    else:
+                        if row[2] == data[2] and row[3] == data[3]:
+                            row[-1] = str(int(row[-1]) + int(data[-1]))
+                            existent_item = row[2]
+                            added_item_count = int(data[-1])
+                            exists = True
+                            break
     
             if not exists:
                 rows.append(data)
@@ -339,9 +448,9 @@ class AddItemsDialog(QDialog):
             self.update_form()
     
             if exists:
-                QMessageBox.information(self, "Success", "Item count updated successfully.")
+                QMessageBox.information(self, "Success", f'Added {added_item_count} existence(s) to the already present "{existent_item}" {self.dropdown.currentText()[:-1]} in the stock.')
             else:
-                QMessageBox.information(self, "Success", "Item added to the inventory.")
+                QMessageBox.information(self, "Success", "Item added to the stock.")
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
 
