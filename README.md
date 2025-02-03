@@ -51,15 +51,33 @@ To get started with PyStocking, follow these steps:
     ```bash
     sudo apt update && sudo apt install -y python3 python3-venv python3-pip
     ```
-2. Download the `launcher/launcher.pyw` file from the repository:
+2. Create a directory for PyStocking and navigate to it:
     ```bash
-    wget https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/launcher.pyw -P ~/.pystocking/launcher/
+    mkdir -p ~/.pystocking/launcher
+    cd ~/.pystocking
     ```
-3. Run the application:
+3. Create a virtual environment inside the PyStocking directory:
     ```bash
-    python3 ~/.pystocking/launcher/launcher.pyw
+    python3 -m venv venv
     ```
-4. Close the application.
+4. Activate the virtual environment:
+    ```bash
+    source venv/bin/activate
+    ```
+5. Download the `launcher/launcher.pyw` and `requirements.txt` files from the repository:
+    ```bash
+    wget https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/launcher.pyw -P launcher/
+    wget https://raw.githubusercontent.com/ngdplnk/PyStocking/main/requirements.txt
+    ```
+6. Install the required packages inside the virtual environment:
+    ```bash
+    pip install -r requirements.txt
+    ```
+7. Run the application:
+    ```bash
+    python3 launcher/launcher.pyw
+    ```
+8. Close the application.
 
 Next time, you can open the program from `~/.pystocking/launcher/launcher.pyw`.
 
@@ -69,7 +87,7 @@ Next time, you can open the program from `~/.pystocking/launcher/launcher.pyw`.
     [Desktop Entry]
     Name=PyStocking
     Comment=Stocking management tool
-    Exec=sh -c 'python3 ~/.pystocking/launcher/launcher.pyw'
+    Exec=sh -c 'source ~/.pystocking/venv/bin/activate && python3 ~/.pystocking/launcher/launcher.pyw'
     Icon=~/.pystocking/launcher/icon.png
     Terminal=false
     Type=Application
@@ -80,7 +98,7 @@ Next time, you can open the program from `~/.pystocking/launcher/launcher.pyw`.
     ```
 - Move the file to your desktop or applications directory:
     ```bash
-    mv pystocking.desktop <your desktop or applications path>
+    mv pystocking.desktop ~/Desktop/
     ```
 
 Enjoy!
