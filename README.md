@@ -18,7 +18,7 @@ PyStocking is a powerful and easy-to-use stocking management tool built in Pytho
   - [Verify Files](#verify-files)
   - [Edit .nsi file](#edit-nsi-file)
   - [Compile the Installer](#compile-the-installer)
-- [Credits](#credits)
+- [Credits and Aknowledgements](#credits-and-aknowledgements)
 
 ## Getting Started
 To get started with PyStocking, follow these steps:
@@ -146,9 +146,11 @@ Open the `build.nsi` file in a text editor and replace the placeholders `<TYPE T
 4. An installer for PyStocking will be created.
 5. Enjoy!
 
-## Credits
+## Credits and Aknowledgements
 
 **PyStocking is an independent software and is not affiliated with any third-party brands or services.**
+
+Special thanks to [@Bruno-Machuca](https://github.com/Bruno-Machuca) for testing and providing feedback on the program :shipit:
 
 PyStocking uses <a href="https://www.flaticon.com/free-icons/stock" title="'Stock' Icons on Flaticon">'Ready Stock' icon created by Hilmy Abiyyu A. - Flaticon</a> - Licensed under the [Flaticon License](https://www.flaticon.com/legal#nav-flaticon-agreement)
 
