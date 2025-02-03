@@ -13,8 +13,8 @@ if sys.platform == "win32":
 else:
     PROGRAM_PATH = os.path.join(os.path.expanduser('~'), '.pystocking')
 SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
-LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.pystk')
-LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.pystk')
+LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'books.pystk')
+LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'office.pystk')
 ICON_PATH = os.path.join(PROGRAM_PATH, 'launcher', 'icon.ico')
 
 class MainMenu(QMainWindow):

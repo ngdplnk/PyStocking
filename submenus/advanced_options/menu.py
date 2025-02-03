@@ -165,10 +165,11 @@ class AdvancedOptionsDialog(QDialog):
     def about_this_program(self):
         quote = random.choice(list(MOTIVATIONAL_QUOTES.values()))
         about_text = (f"<b>PyStocking</b><br>"
-                      f"Version: 1.0<br>"
-                      f"Developer: Nico (<a href='https://github.com/ngdplnk'>@ngdplnk</a>)<br>"
-                      f"© 2025 ngdplnk<br><br>"
-                      f"\"{quote}\"")
+                        f"Version: 1.0<br>"
+                        f"Developer: Nico (<a href='https://github.com/ngdplnk'>@ngdplnk</a>)<br>"
+                        f"© 2025 ngdplnk<br><br>"
+                        f"Licensed under <a href='https://github.com/ngdplnk/PyStocking/blob/main/LICENSE'>Elastic License 2.0</a><br><br>"
+                        f"\"{quote}\"")
         QMessageBox.information(self, "About This Program", about_text)
 
 def open_advanced_options_menu(parent):

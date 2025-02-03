@@ -13,8 +13,8 @@ else:
 SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
 CATEGORIES_PATH = os.path.join(SAVES_PATH, 'cats.pystk')
 BRANDS_PATH = os.path.join(SAVES_PATH, 'brands.pystk')
-LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.pystk')
-LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.pystk')
+LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'books.pystk')
+LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'office.pystk')
 
 class ManageItemsDialog(QDialog):
     def __init__(self, parent=None):
@@ -51,9 +51,9 @@ class ManageItemsDialog(QDialog):
         self.layout.addLayout(self.search_layout)
 
         if sys.platform == "win32":
-            self.save_button = QPushButton("Save Spreadsheet to Desktop")
+            self.save_button = QPushButton("Save current spreadsheet to Desktop")
         else:
-            self.save_button = QPushButton("Save Spreadsheet to Home")
+            self.save_button = QPushButton("Save current spreadsheet to Home")
         self.save_button.setFont(self.font)
         self.save_button.setEnabled(False)
         self.save_button.clicked.connect(self.save_to_desktop)
@@ -67,6 +67,7 @@ class ManageItemsDialog(QDialog):
         self.table_widget.itemSelectionChanged.connect(self.update_buttons)
         self.table_widget.itemDoubleClicked.connect(self.edit_item)
         self.table_widget.setSortingEnabled(True)
+        self.table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
         self.layout.addWidget(self.table_widget)
 
         self.button_layout = QHBoxLayout()
@@ -427,6 +428,15 @@ class EditBookDialog(QDialog):
             QMessageBox.critical(self, "Error", "Name cannot be empty.")
             return
         
+        # Ensure that pages is a non-zero positive integer
+        try:
+            pages = int(data[4])
+            if pages <= 0:
+                raise ValueError("Pages must be a positive integer.")
+        except ValueError:
+            QMessageBox.critical(self, "Error", "Invalid Pages value. It must be a positive integer.")
+            return
+        
         # Ensure that photocopyprice is a non-zero positive number
         try:
             photocopyprice = float(data[5])
@@ -435,6 +445,16 @@ class EditBookDialog(QDialog):
         except ValueError:
             QMessageBox.critical(self, "Error", "Invalid Photocopy Price. It must be a positive number.")
             return
+        
+        # Ensure that bookprice is either blank or a non-zero positive number
+        if data[6] != "-":
+            try:
+                bookprice = float(data[6])
+                if bookprice <= 0:
+                    raise ValueError("Book Price must be a positive number.")
+            except ValueError:
+                QMessageBox.critical(self, "Error", "Invalid Book Price. It must be a positive number.")
+                return
         
         # Ensure that qtty is a non-zero positive number
         try:
@@ -450,9 +470,19 @@ class EditBookDialog(QDialog):
                 reader = csv.reader(file)
                 rows = list(reader)
                 for row in rows:
-                    if row[0] != data[0] and row[1] == data[1] and row[2] == data[2]:
+                    if row[0] != data[0] and row[1] == data[1] and row[2] == data[2] and row[3] == data[3]:
                         QMessageBox.critical(self, "Error", "This book already exists!")
                         return
+                for row in rows:
+                    if row[0] == data[0]:
+                        row[1] = data[1]
+                        row[2] = data[2]
+                        row[3] = data[3]
+                        row[4] = data[4]
+                        row[5] = data[5]
+                        row[6] = data[6]
+                        row[7] = data[7]
+                        break
         
             with open(LATEST_BOOKS_PATH, 'w', newline='') as file:
                 writer = csv.writer(file)
@@ -689,6 +719,10 @@ class EditOfficeItemDialog(QDialog):
             with open(LATEST_OFFICE_PATH, 'r') as file:
                 reader = csv.reader(file)
                 rows = list(reader)
+                for row in rows:
+                    if row[0] != data[0] and row[1] == data[1] and row[2] == data[2] and row[3] == data[3] and row[4] == data[4]:
+                        QMessageBox.critical(self, "Error", "This office item already exists!")
+                        return
                 for row in rows:
                     if row[0] == data[0]:
                         row[1] = data[1]

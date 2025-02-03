@@ -11,8 +11,8 @@ else:
 SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
 CATEGORIES_PATH = os.path.join(SAVES_PATH, 'cats.pystk')
 BRANDS_PATH = os.path.join(SAVES_PATH, 'brands.pystk')
-LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'latest_books.pystk')
-LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'latest_office.pystk')
+LATEST_BOOKS_PATH = os.path.join(SAVES_PATH, 'books.pystk')
+LATEST_OFFICE_PATH = os.path.join(SAVES_PATH, 'office.pystk')
 
 class AddItemsDialog(QDialog):
     def __init__(self, parent=None):
@@ -373,6 +373,23 @@ class AddItemsDialog(QDialog):
                         raise ValueError("Photocopy Price must be a positive number.")
                 except ValueError:
                     raise ValueError("Invalid Photocopy Price. It must be a positive number.")
+                
+                # Ensure that pages is a non-zero positive integer
+                try:
+                    pages = int(data[4])
+                    if pages <= 0:
+                        raise ValueError("Pages must be a positive integer.")
+                except ValueError:
+                    raise ValueError("Invalid Pages value. It must be a positive integer.")
+                
+                # Ensure that bookprice is either blank or a non-zero positive number
+                if data[6] != "-":
+                    try:
+                        bookprice = float(data[6])
+                        if bookprice <= 0:
+                            raise ValueError("Book Price must be a positive number.")
+                    except ValueError:
+                        raise ValueError("Invalid Book Price. It must be a positive number.")
     
             else:
                 new_id = self.get_next_available_id(LATEST_OFFICE_PATH)
@@ -418,14 +435,14 @@ class AddItemsDialog(QDialog):
                 rows = list(reader)
                 for row in rows:
                     if self.dropdown.currentText() == 'Books':
-                        if row[1] == data[1] and row[2] == data[2]:
+                        if row[1] == data[1] and row[2] == data[2] and row[3] == data[3]:
                             row[-1] = str(int(row[-1]) + int(data[-1]))
                             existent_item = row[1]
                             added_item_count = int(data[-1])
                             exists = True
                             break
                     else:
-                        if row[2] == data[2] and row[3] == data[3]:
+                        if row[1] == data[1] and row[2] == data[2] and row[3] == data[3] and row[4] == data[4]:
                             row[-1] = str(int(row[-1]) + int(data[-1]))
                             existent_item = row[2]
                             added_item_count = int(data[-1])
