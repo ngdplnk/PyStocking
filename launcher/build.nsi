@@ -61,7 +61,7 @@ Section "MainSection" SEC01
   File /oname=requirements.txt "${REQUIREMENTS_PATH}"
 
   # Install pip requirements
-  ExecWait '@"$SYSDIR\cmd.exe" /C "pip install -r $APPDATA\PyStocking\requirements.txt"'
+  ExecWait 'pip install -r "$APPDATA\PyStocking\requirements.txt"'
 
   # Create a desktop shortcut
   CreateShortCut "$DESKTOP\PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
