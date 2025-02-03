@@ -22,7 +22,8 @@ class MainMenu(QMainWindow):
         super().__init__()
 
         # Set window icon
-        self.setWindowIcon(QIcon(ICON_PATH))
+        if os.path.isfile(ICON_PATH):
+            self.setWindowIcon(QIcon(ICON_PATH))
 
         # Window title
         self.setWindowTitle("PyStocking - Main Menu")
@@ -152,7 +153,8 @@ class MainMenu(QMainWindow):
     
 def main():
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(ICON_PATH))
+    if os.path.isfile(ICON_PATH):
+        app.setWindowIcon(QIcon(ICON_PATH))
     main_menu = MainMenu()
     main_menu.show()
     sys.exit(app.exec_())

@@ -59,16 +59,16 @@ try:
         writecode.write(code.content)
     # Run the program
     if sys.platform == 'win32':
-        subprocess.Popen(f"start /B python {MAIN_PATH}", shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.Popen(f"python {MAIN_PATH}", creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
         os.system(f"python3 {MAIN_PATH}")    
 except Exception:
     if os.path.isfile(MAIN_PATH) and os.path.isfile(ADDITEMS_MENU_PATH) and os.path.isfile(ADVOPTIONS_MENU_PATH) and os.path.isfile(MANAGEITEMS_MENU_PATH):
         if sys.platform == 'win32':
-            subprocess.Popen(f"start /B python {MAIN_PATH}", shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(f"python {MAIN_PATH}", creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             os.system(f"python3 {MAIN_PATH}")
     else:
         app = QApplication(sys.argv)
-        QMessageBox.critical(None, "Error", "No se pudo obtener el código actualizado. Por favor, intenta de nuevo más tarde.")
+        QMessageBox.critical(None, "Error", "Couldn't download the necessary files. Please check your internet connection and try again.")
         sys.exit(1)
