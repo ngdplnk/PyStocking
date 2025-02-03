@@ -113,7 +113,7 @@ You need to install the latest NSIS (Nullsoft Scriptable Install System) version
 
 ### Verify Files
 
-Navigate to the cloned repository and ensure that you have the following files:
+Navigate to the cloned repository folder and ensure that you have the following files:
 
 - `launcher\build.nsi`
 - `launcher\icon.ico`
@@ -121,6 +121,7 @@ Navigate to the cloned repository and ensure that you have the following files:
 - `submenus\add_items\menu.py`
 - `submenus\advanced_options\menu.py`
 - `submenus\manage_items\menu.py`
+- `requirements.txt`
 - `main.pyw`
 
 If any of these files are missing, please download them directly from the repository.
@@ -141,4 +142,6 @@ Open the `build.nsi` file in a text editor and replace the placeholders `<TYPE T
 
 **PyStocking is an independent software and is not affiliated with any third-party brands or services.**
 
-Licensed under [Elastic License 2.0](https://github.com/ngdplnk/PyStocking/blob/main/LICENSE) - Copyright © 2025 ngdplnk
+PyStocking uses <a href="https://www.flaticon.com/free-icons/stock" title="'Stock' Icons on Flaticon">'Ready Stock' icon created by Hilmy Abiyyu A. - Flaticon</a> - Licensed under the [Flaticon License](https://www.flaticon.com/legal#nav-flaticon-agreement)
+
+PyStocking is licensed under [Elastic License 2.0](https://github.com/ngdplnk/PyStocking/blob/main/LICENSE) - Copyright © 2025 ngdplnk
