@@ -61,7 +61,7 @@ Section "MainSection" SEC01
   File /oname=requirements.txt "${REQUIREMENTS_PATH}"
 
   # Install pip requirements
-  ExecWait 'pip install -r "$APPDATA\PyStocking\requirements.txt"'
+  nsExec::ExecToLog 'cmd /c "pip install -r $APPDATA\PyStocking\requirements.txt"'
 
   # Create a desktop shortcut
   CreateShortCut "$DESKTOP\PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
@@ -95,6 +95,9 @@ Section "Uninstall"
 
   # Set the uninstaller to close automatically when done
   SetAutoClose true
+
+  # Uninstall pip requirements
+  nsExec::ExecToLog 'cmd /c "pip uninstall -r $APPDATA\PyStocking\requirements.txt -y"'
 
   # Remove the shortcuts
   Delete "$DESKTOP\PyStocking.lnk"
