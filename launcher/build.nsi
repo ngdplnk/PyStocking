@@ -1,10 +1,12 @@
 ### INSTALLER BUILD SCRIPT ###
 
-!define ICON_PATH "<TYPE THE ICON.ICO PATH HERE>"
-!define LAUNCHER_PATH "<TYPE THE LAUNCHER.PYW PATH HERE>"
-!define MAIN_PATH "<TYPE THE MAIN.PYW PATH HERE>"
-!define SUBMENUS_PATH "<TYPE THE SUBMENUS FOLDER PATH HERE>"
-!define REQUIREMENTS_PATH "<TYPE THE REQUIREMENTS.TXT PATH HERE>"
+!define ICON_PATH "<REPLACE WITH THE ICON.ICO PATH>"
+!define UPDATER_ICON_PATH "<REPLACE WITH THE UPD_ICON.ICO PATH>"
+!define LAUNCHER_PATH "<REPLACE WITH THE LAUNCHER.PYW PATH>"
+!define MAIN_PATH "<REPLACE WITH THE MAIN.PYW PATH>"
+!define SUBMENUS_PATH "<REPLACE WITH THE SUBMENUS FOLDER PATH>"
+!define REQUIREMENTS_PATH "<REPLACE WITH THE REQUIREMENTS.TXT PATH>"
+!define INFO_PATH "<REPLACE WITH THE INFO.JSON PATH>"
 
 ############################################################
 
@@ -56,6 +58,14 @@ Section "MainSection" SEC01
   SetOutPath $APPDATA\PyStocking\launcher
   File /oname=icon.ico "${ICON_PATH}"
 
+  # Copy updater icon
+  SetOutPath $APPDATA\PyStocking\launcher
+  File /oname=upd_icon.ico "${UPDATER_ICON_PATH}"
+
+  # Copy info.json
+  SetOutPath $APPDATA\PyStocking
+  File /oname=info.json "${INFO_PATH}"
+
   # Copy requirements.txt
   SetOutPath $APPDATA\PyStocking
   File /oname=requirements.txt "${REQUIREMENTS_PATH}"
@@ -63,11 +73,17 @@ Section "MainSection" SEC01
   # Install pip requirements
   nsExec::ExecToLog 'cmd /c "pip install -r $APPDATA\PyStocking\requirements.txt"'
 
-  # Create a desktop shortcut
-  CreateShortCut "$DESKTOP\PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
+  # Create a desktop shortcut for the main program
+  CreateShortCut "$DESKTOP\PyStocking.lnk" "$APPDATA\PyStocking\main.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
 
-  # Create a Start Menu shortcut
-  CreateShortCut "$SMPROGRAMS\PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
+  # Create a Start Menu shortcut for the main program
+  CreateShortCut "$SMPROGRAMS\PyStocking.lnk" "$APPDATA\PyStocking\main.pyw" "" "$APPDATA\PyStocking\launcher\icon.ico" 0
+
+  # Create a desktop shortcut for the launcher
+  CreateShortCut "$DESKTOP\Update PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\upd_icon.ico" 0
+
+  # Create a Start Menu shortcut for the launcher
+  CreateShortCut "$SMPROGRAMS\Update PyStocking.lnk" "$APPDATA\PyStocking\launcher\launcher.pyw" "" "$APPDATA\PyStocking\launcher\upd_icon.ico" 0
 
   # Write the uninstall keys for Add/Remove Programs
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\PyStocking" "DisplayName" "PyStocking"
@@ -78,7 +94,7 @@ Section "MainSection" SEC01
   WriteUninstaller "$INSTDIR\uninstaller.exe"
 
   # Show a message when the program is completely installed
-  MessageBox MB_YESNO|MB_ICONINFORMATION "The program has been installed successfully. Do you want to open it now?" IDYES runProgram
+  MessageBox MB_YESNO|MB_ICONINFORMATION "The program has been successfully installed on your computer. Would you like to run it now?" IDYES runProgram
 
   # Don't run the program if the user clicked "No"
   Goto end
@@ -102,6 +118,8 @@ Section "Uninstall"
   # Remove the shortcuts
   Delete "$DESKTOP\PyStocking.lnk"
   Delete "$SMPROGRAMS\PyStocking.lnk"
+  Delete "$DESKTOP\Update PyStocking.lnk"
+  Delete "$SMPROGRAMS\Update PyStocking.lnk"
 
   # Remove the uninstaller
   Delete "$INSTDIR\uninstaller.exe"
@@ -113,6 +131,6 @@ Section "Uninstall"
   RMDir /r $APPDATA\PyStocking
 
   # Show a message when the program is completely uninstalled
-  MessageBox MB_OK|MB_ICONINFORMATION "The program has been uninstalled successfully."
+  MessageBox MB_OK|MB_ICONINFORMATION "The program has been successfully uninstalled from your computer."
 
 SectionEnd
