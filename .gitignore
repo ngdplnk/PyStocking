@@ -1,6 +1,9 @@
+.vscode
 lib64
 lib
 include
 bin
+submenus/add_items/__pycache__
+submenus/advanced_options/__pycache__
+submenus/manage_items/__pycache__
 pyvenv.cfg
-.vscode

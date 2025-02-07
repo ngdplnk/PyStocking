@@ -10,11 +10,11 @@ if sys.platform == 'win32':
     PROGRAM_PATH = os.path.join(os.environ.get("APPDATA"), "PyStocking")
 else:
     PROGRAM_PATH = os.path.join(os.path.expanduser("~"), ".pystocking")
-LAUNCHER_PATH = os.path.join(PROGRAM_PATH, "launcher")
+ASSETS_PATH = os.path.join(PROGRAM_PATH, "assets")
+ICON_PATH = os.path.join(ASSETS_PATH, "icon.ico")
+UPDATER_ICON_PATH = os.path.join(ASSETS_PATH, "upd_icon.ico")
+UPDATER_PATH = os.path.join(PROGRAM_PATH, "updater.pyw")
 INFO_PATH = os.path.join(PROGRAM_PATH, "info.json")
-ICON_PATH = os.path.join(LAUNCHER_PATH, "icon.ico")
-UPDATER_ICON_PATH = os.path.join(LAUNCHER_PATH, "upd_icon.ico")
-LAUNCHERSCRIPT_PATH = os.path.join(LAUNCHER_PATH, "launcher.pyw")
 MAIN_PATH = os.path.join(PROGRAM_PATH, "main.pyw")
 SUBMENUS_PATH = os.path.join(PROGRAM_PATH, "submenus")
 ADDITEMS_PATH = os.path.join(SUBMENUS_PATH, "add_items")
@@ -25,7 +25,7 @@ MANAGEITEMS_PATH = os.path.join(SUBMENUS_PATH, "manage_items")
 MANAGEITEMS_MENU_PATH = os.path.join(MANAGEITEMS_PATH, "menu.py")
 
 os.makedirs(PROGRAM_PATH, exist_ok=True)
-os.makedirs(LAUNCHER_PATH, exist_ok=True)
+os.makedirs(ASSETS_PATH, exist_ok=True)
 os.makedirs(SUBMENUS_PATH, exist_ok=True)
 os.makedirs(ADDITEMS_PATH, exist_ok=True)
 os.makedirs(ADVOPTIONS_PATH, exist_ok=True)
@@ -44,19 +44,19 @@ try:
             local_version = json.load(file)
     if local_version is None or local_version["versionCode"] < remote_version["versionCode"]:
         # Icon
-        link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/icon.ico"
+        link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/assets/icon.ico"
         code = session.get(link)
         with open(ICON_PATH, 'wb') as writecode:
             writecode.write(code.content)
         # Updater Icon
-        link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/upd_icon.ico"
+        link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/assets/upd_icon.ico"
         code = session.get(link)
         with open(UPDATER_ICON_PATH, 'wb') as writecode:
             writecode.write(code.content)
         # Launcher Script
-        link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/launcher.pyw"
+        link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/updater.pyw"
         code = session.get(link)
-        with open(LAUNCHERSCRIPT_PATH, 'wb') as writecode:
+        with open(UPDATER_PATH, 'wb') as writecode:
             writecode.write(code.content)
         # Add Items Menu
         link = "https://raw.githubusercontent.com/ngdplnk/PyStocking/main/submenus/add_items/menu.py"
@@ -87,11 +87,18 @@ try:
         else:
             os.system(f"python3 {MAIN_PATH}")
     else:
+        # Display a message indicating there are no updates
+        app = QApplication(sys.argv)
+        if os.path.exists(ICON_PATH):
+            app.setWindowIcon(QIcon(ICON_PATH))
+        QMessageBox.information(None, "No Updates", "There are no updates available.")
+        sys.exit(0)
+        
         # Run the program
         if sys.platform == 'win32':
             subprocess.Popen(f"python {MAIN_PATH}", creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
-            os.system(f"python3 {MAIN_PATH}")  
+            os.system(f"python3 {MAIN_PATH}")
 except Exception:
     if os.path.isfile(MAIN_PATH) and os.path.isfile(ADDITEMS_MENU_PATH) and os.path.isfile(ADVOPTIONS_MENU_PATH) and os.path.isfile(MANAGEITEMS_MENU_PATH):
         if sys.platform == 'win32':

@@ -11,8 +11,12 @@ if sys.platform == "win32":
 else:
     PROGRAM_PATH = os.path.join(os.path.expanduser('~'), '.pystocking')
 SAVES_PATH = os.path.join(PROGRAM_PATH, 'saves')
-CATEGORIES_PATH = os.path.join(SAVES_PATH, 'cats.pystk')
-BRANDS_PATH = os.path.join(SAVES_PATH, 'brands.pystk')
+DATA_PATH = os.path.join(PROGRAM_PATH, 'data')
+CATS_SCHOOL_PATH = os.path.join(DATA_PATH, 'cats_school.pystk')
+CATS_OFFICE_PATH = os.path.join(DATA_PATH, 'cats_office.pystk')
+BRANDS_SCHOOL_PATH = os.path.join(DATA_PATH, 'brands_school.pystk')
+BRANDS_OFFICE_PATH = os.path.join(DATA_PATH, 'brands_office.pystk')
+EDITORIALS_PATH = os.path.join(DATA_PATH, 'editorials.pystk')
 
 MOTIVATIONAL_QUOTES = {
     1: "The only way to do great work is to love what you do. - Steve Jobs",
@@ -41,7 +45,7 @@ class AdvancedOptionsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Advanced Options")
-        self.setGeometry(100, 100, 700, 380)
+        self.setGeometry(100, 100, 860, 460)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -57,7 +61,7 @@ class AdvancedOptionsDialog(QDialog):
         self.title_label.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.title_label)
 
-        self.subtitle_label = QLabel("Be careful, these options are dangerous and you could delete something you don't want to. Continue at your own risk.")
+        self.subtitle_label = QLabel("Be careful, these options are dangerous and you could delete something you don't want to.")
         self.subtitle_label_font = QFont()
         self.subtitle_label_font.setPointSize(16)
         self.subtitle_label.setFont(self.subtitle_label_font)
@@ -69,7 +73,7 @@ class AdvancedOptionsDialog(QDialog):
         self.button_layout = QVBoxLayout()
         self.button_layout.setAlignment(Qt.AlignCenter)
 
-        self.open_folder_button = QPushButton("Open Saved Files Folder")
+        self.open_folder_button = QPushButton("Open Backups Folder")
         self.open_folder_button.setFont(self.font)
         self.open_folder_button.setFixedHeight(60)
         self.open_folder_button.setFixedWidth(self.title_label.sizeHint().width())
@@ -93,6 +97,14 @@ class AdvancedOptionsDialog(QDialog):
         self.clear_unused_brands_button.setToolTip("Clear all the brands that are not being used by any item.")
         self.button_layout.addWidget(self.clear_unused_brands_button)
 
+        self.clear_unused_editorials_button = QPushButton("Clear Unused Editorials")
+        self.clear_unused_editorials_button.setFont(self.font)
+        self.clear_unused_editorials_button.setFixedHeight(60)
+        self.clear_unused_editorials_button.setFixedWidth(self.title_label.sizeHint().width())
+        self.clear_unused_editorials_button.clicked.connect(self.clear_unused_editorials)
+        self.clear_unused_editorials_button.setToolTip("Clear all the editorials that are not being used by any item.")
+        self.button_layout.addWidget(self.clear_unused_editorials_button)
+
         self.clear_data_button = QPushButton("Clear All App Data")
         self.clear_data_button.setFont(self.font)
         self.clear_data_button.setFixedHeight(60)
@@ -106,20 +118,15 @@ class AdvancedOptionsDialog(QDialog):
         self.about_button.setFixedHeight(60)
         self.about_button.setFixedWidth(self.title_label.sizeHint().width())
         self.about_button.clicked.connect(self.about_this_program)
-        self.about_button.setToolTip("Information about this program.")
+        self.about_button.setToolTip("Info about this program.")
         self.button_layout.addWidget(self.about_button)
 
         self.layout.addLayout(self.button_layout)
 
     def open_saved_files_folder(self):
-        reply = QMessageBox.question(self, 'Warning', 
-                                     "It's not recommended to enter this folder unless you want to restore an old export you did in the past. "
-                                     "Do you want to proceed anyways?", 
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            if not os.path.exists(SAVES_PATH):
-                os.makedirs(SAVES_PATH)
-            os.startfile(SAVES_PATH) if sys.platform == "win32" else os.system(f'xdg-open "{SAVES_PATH}"')
+        if not os.path.exists(SAVES_PATH):
+            os.makedirs(SAVES_PATH)
+        os.startfile(SAVES_PATH) if sys.platform == "win32" else os.system(f'xdg-open "{SAVES_PATH}"')
 
     def clear_unused_categories(self):
         reply = QMessageBox.question(self, 'Warning', 
@@ -127,11 +134,22 @@ class AdvancedOptionsDialog(QDialog):
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             try:
-                if os.path.isfile(CATEGORIES_PATH):
-                    os.remove(CATEGORIES_PATH)
-                    QMessageBox.information(self, "Success", "Unused categories have been deleted.")
+                school_cleared = False
+                office_cleared = False
+                if os.path.isfile(CATS_SCHOOL_PATH):
+                    os.remove(CATS_SCHOOL_PATH)
+                    school_cleared = True
+                if os.path.isfile(CATS_OFFICE_PATH):
+                    os.remove(CATS_OFFICE_PATH)
+                    office_cleared = True
+                if school_cleared and not office_cleared:
+                    QMessageBox.information(self, "Success", "Unused categories from school items have been deleted.")
+                elif not school_cleared and office_cleared:
+                    QMessageBox.information(self, "Success", "Unused categories from office items have been deleted.")
+                elif school_cleared and office_cleared:
+                    QMessageBox.information(self, "Success", "Unused categories from school and office items have been deleted.")
                 else:
-                    QMessageBox.information(self, "Info", "There are no categories to delete.")
+                    QMessageBox.information(self, "Info", "There are no categories to delete :)")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete categories file: {e}")
 
@@ -141,13 +159,38 @@ class AdvancedOptionsDialog(QDialog):
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             try:
-                if os.path.isfile(BRANDS_PATH):
-                    os.remove(BRANDS_PATH)
-                    QMessageBox.information(self, "Success", "Unused brands have been deleted.")
+                school_cleared = False
+                office_cleared = False
+                if os.path.isfile(BRANDS_SCHOOL_PATH):
+                    os.remove(BRANDS_SCHOOL_PATH)
+                    school_cleared = True
+                if os.path.isfile(BRANDS_OFFICE_PATH):
+                    os.remove(BRANDS_OFFICE_PATH)
+                    office_cleared = True
+                if school_cleared and not office_cleared:
+                    QMessageBox.information(self, "Success", "Unused brands from school items have been deleted.")
+                elif not school_cleared and office_cleared:
+                    QMessageBox.information(self, "Success", "Unused brands from office items have been deleted.")
+                elif school_cleared and office_cleared:
+                    QMessageBox.information(self, "Success", "Unused brands from school and office items have been deleted.")
                 else:
-                    QMessageBox.information(self, "Info", "There are no brands to delete.")
+                    QMessageBox.information(self, "Info", "There are no brands to delete :)")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete brands file: {e}")
+
+    def clear_unused_editorials(self):
+        reply = QMessageBox.question(self, 'Warning', 
+                                     "This will clear all the editorials that are not being used by any item. Do you want to proceed?", 
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            try:
+                if os.path.isfile(EDITORIALS_PATH):
+                    os.remove(EDITORIALS_PATH)
+                    QMessageBox.information(self, "Success", "Unused editorials have been deleted.")
+                else:
+                    QMessageBox.information(self, "Info", "There are no editorials to delete :)")
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to delete editorials file: {e}")
 
     def clear_all_app_data(self):
         reply = QMessageBox.question(self, 'Warning', 
@@ -158,6 +201,7 @@ class AdvancedOptionsDialog(QDialog):
             if ok:
                 if password == "pystockingnuke":
                     shutil.rmtree(SAVES_PATH, ignore_errors=True)
+                    shutil.rmtree(DATA_PATH, ignore_errors=True)
                     QMessageBox.information(self, "Success", "All app data has been cleared.")
                 else:
                     QMessageBox.critical(self, "Error", "Wrong password")
