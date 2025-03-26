@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ngdplnk/PyStocking/main/launcher/icon.png" alt="PyStocking Icon" width="200" />
+  <img src="https://raw.githubusercontent.com/ngdplnk/PyStocking/main/assets/icon.png" alt="PyStocking Icon" width="200" />
 </p>
 
 # PyStocking - A stocking program built using Python
